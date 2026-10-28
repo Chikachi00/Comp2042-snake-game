@@ -2,11 +2,17 @@ package com.comp2042;
 
 import javafx.scene.image.Image;
 
+import java.awt.Point;
+
 public class SilverCoin extends Coin {
     private Image image = new Image("resources/views/res/silvercoin.png");
 
     public SilverCoin(int x, int y, Snake snek, Obstacle obstacle) {
         super(x, y, snek, obstacle);
+    }
+
+    SilverCoin(Point position) {
+        super(position);
     }
 
     public Image getImage() {

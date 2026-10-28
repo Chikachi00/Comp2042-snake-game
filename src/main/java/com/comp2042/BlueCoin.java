@@ -2,11 +2,17 @@ package com.comp2042;
 
 import javafx.scene.image.Image;
 
+import java.awt.Point;
+
 public class BlueCoin extends Coin {
     private Image image = new Image("resources/views/res/bluecoin.png");
 
     public BlueCoin(int x, int y, Snake snek, Obstacle obstacle) {
         super(x, y, snek, obstacle);
+    }
+
+    BlueCoin(Point position) {
+        super(position);
     }
 
     public int getPoints() {

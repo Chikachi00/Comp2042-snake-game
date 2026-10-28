@@ -8,6 +8,7 @@ public class Game {
     private int height;
     private int score;
     private int maxScore;
+    private boolean boardFull;
     private double multiplier;
     private int scorePoints;
     private double speed;
@@ -38,7 +39,11 @@ public class Game {
     }
 
     public boolean gameWon() {
-        return score == maxScore;
+        return boardFull || score == maxScore;
+    }
+
+    void markBoardFull() {
+        boardFull = true;
     }
 
     public void incScore() {
@@ -46,7 +51,7 @@ public class Game {
     }
 
     public void decMaxScore(int num) {
-        this.maxScore -= (num - 1);
+        this.maxScore -= num;
     }
 
     public int getWidth() {
@@ -60,6 +65,8 @@ public class Game {
     public void resetScore() {
         score = 0;
         scorePoints = 0;
+        maxScore = width * height - 2;
+        boardFull = false;
     }
 
     public Color getColor() {

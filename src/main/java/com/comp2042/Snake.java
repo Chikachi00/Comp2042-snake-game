@@ -39,55 +39,49 @@ public class Snake {
 
     public void move(char dir) {
         body.add(new Point(head));
+        int previousX = head.x;
+        int previousY = head.y;
+
         switch (dir) {
             case 'U':
                 snakeDir = 0;
                 head.translate(0, -1);
-                if (borderControl() && (!ignoreBorders && !noBorder) || obstacle.getObstacles().contains(head)) {
-                    head.translate(0, 1);
-                    dead = true;
-                } else if (borderControl() && (ignoreBorders || noBorder)) {
-                    head.setLocation(head.getX(), gy - 1);
-                }
                 break;
-
             case 'D':
                 snakeDir = 180;
                 head.translate(0, 1);
-                if (borderControl() && (!ignoreBorders && !noBorder) || obstacle.getObstacles().contains(head)) {
-                    head.translate(0, -1);
-                    dead = true;
-                } else if (borderControl() && (ignoreBorders || noBorder)) {
-                    head.setLocation(head.getX(), 0);
-                }
                 break;
-
             case 'L':
                 snakeDir = 270;
                 head.translate(-1, 0);
-                if (borderControl() && (!ignoreBorders && !noBorder) || obstacle.getObstacles().contains(head)) {
-                    head.translate(1, 0);
-                    dead = true;
-                } else if (borderControl() && (ignoreBorders || noBorder)) {
-                    head.setLocation(gx - 1, head.getY());
-                }
                 break;
-
             case 'R':
                 snakeDir = 90;
                 head.translate(1, 0);
-                if (borderControl() && (!ignoreBorders && !noBorder) || obstacle.getObstacles().contains(head)) {
-                    head.translate(-1, 0);
-                    dead = true;
-                } else if (borderControl() && (ignoreBorders || noBorder)) {
-                    head.setLocation(0, head.getY());
-                }
                 break;
+        }
+
+        if (borderControl()) {
+            if (ignoreBorders || noBorder) {
+                wrapHead();
+            } else {
+                head.setLocation(previousX, previousY);
+                dead = true;
+            }
+        }
+
+        if (!dead && obstacle.getObstacles().contains(head)) {
+            head.setLocation(previousX, previousY);
+            dead = true;
         }
 
         if (body.size() > 4 && hitSelf() && !body.get(0).equals(head)) {
             dead = true;
         }
+    }
+
+    private void wrapHead() {
+        head.setLocation(Math.floorMod(head.x, gx), Math.floorMod(head.y, gy));
     }
 
     public int getBodyDir(int bodyCount) {
