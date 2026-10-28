@@ -85,7 +85,7 @@ public class GameController {
     public void handle(KeyEvent event) {
         if (event.getCode().isArrowKey()) animation.play();
 
-        if (valKey(event.getCode()) && !keyPressed) {
+        if (isDirectionAllowed(key, event.getCode()) && !keyPressed) {
             lastKey = key;
             key = event.getCode();
             keyPressed = true;
@@ -122,15 +122,21 @@ public class GameController {
         }
     }
 
-    private boolean valKey(KeyCode key) {
-        if (!key.isArrowKey()) return false;
-        else {
-            if (key.equals(KeyCode.LEFT)) if (!this.key.equals(KeyCode.RIGHT)) return true;
-            if (key.equals(KeyCode.RIGHT)) if (!this.key.equals(KeyCode.LEFT)) return true;
-            if (key.equals(KeyCode.DOWN)) if (!this.key.equals(KeyCode.DOWN)) return true;
-            if (key.equals(KeyCode.UP)) return !this.key.equals(KeyCode.DOWN);
-            return false;
-        }
+    /**
+     * Allows continuing forward or turning, but rejects reversing and non-arrow keys.
+     *
+     * @param currentDirection the snake's current movement direction
+     * @param requestedDirection the key requested by the player
+     * @return whether the requested direction is a legal movement direction
+     */
+    static boolean isDirectionAllowed(KeyCode currentDirection, KeyCode requestedDirection) {
+        return switch (requestedDirection) {
+            case LEFT -> currentDirection != KeyCode.RIGHT;
+            case RIGHT -> currentDirection != KeyCode.LEFT;
+            case UP -> currentDirection != KeyCode.DOWN;
+            case DOWN -> currentDirection != KeyCode.UP;
+            default -> false;
+        };
     }
 
     private void reset() {
