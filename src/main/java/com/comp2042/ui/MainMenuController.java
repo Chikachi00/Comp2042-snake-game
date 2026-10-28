@@ -45,6 +45,7 @@ public class MainMenuController {
         gameScene.setOnKeyPressed(controller::handle);
 
         gameView.makeScene(gameScene, snek, coin);
+        gameView.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);
         gameView.attachTo(gamePane);
     }
 

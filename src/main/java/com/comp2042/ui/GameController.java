@@ -23,6 +23,7 @@ public class GameController {
 
     private Direction direction = Direction.LEFT;
     private boolean keyPressed = false;
+    private final GameFlow flow = new GameFlow();
 
     public GameController(Snake snek, Coin coin, Game game, GameView gameView,
                           Obstacle obstacle, Stage stage, Runnable returnToMenu) {
@@ -54,6 +55,8 @@ public class GameController {
             gameView.gameWon();
             gameView.updateScoreLabel();
             stopAnimation();
+            flow.end();
+            gameView.showEndMenu(true);
             return;
         }
 
@@ -66,6 +69,8 @@ public class GameController {
         gameView.updateScoreLabel();
         if (snake.getDead()) {
             stopAnimation();
+            flow.end();
+            gameView.showEndMenu(false);
         }
     }
 
@@ -84,42 +89,67 @@ public class GameController {
     }
 
     public void handle(KeyEvent event) {
-        if (event.getCode().isArrowKey() && !session.isOver()) animation.play();
-
-        Direction requested = directionForKey(event.getCode());
-        if (!session.isOver() && requested != null && !direction.isOpposite(requested) && !keyPressed) {
-            Direction previous = direction;
-            direction = requested;
-            keyPressed = true;
-            gameView.turnDir(session.getSnake(), previous, direction);
+        KeyCode code = event.getCode();
+        if (code == KeyCode.TAB) {
+            restart();
+            event.consume();
+            return;
         }
-
-        if (event.getCode().equals(KeyCode.P)) {
-            animation.stop();
+        if (code == KeyCode.P || code == KeyCode.ESCAPE) {
+            if (flow.isPaused()) resume();
+            else if (!session.isOver()) pause();
+            event.consume();
+            return;
         }
+        if (flow.isPaused() || session.isOver()) return;
 
-        if (event.getCode().equals(KeyCode.TAB)) {
-            reset();
+        Direction requested = directionForKey(code);
+        if (requested != null) {
+            flow.start();
+            animation.play();
+            if (!direction.isOpposite(requested) && !keyPressed) {
+                Direction previous = direction;
+                direction = requested;
+                keyPressed = true;
+                gameView.turnDir(session.getSnake(), previous, direction);
+            }
         }
-
-        if (event.getCode().equals(KeyCode.PLUS)) {
+        if (code == KeyCode.PLUS) {
             gameView.scaleToFullscreen(true, stage, session.getObstacle(), session.getSnake(), session.getCoin());
-        }
-
-        if (event.getCode().equals(KeyCode.MINUS)) {
+        } else if (code == KeyCode.MINUS) {
             gameView.scaleToFullscreen(false, stage, session.getObstacle(), session.getSnake(), session.getCoin());
         }
+    }
 
-        if (event.getCode().equals(KeyCode.ESCAPE)) {
-            animation.stop();
-            returnToMenu.run();
-        }
+    public void pause() {
+        if (!flow.pause()) return;
+        animation.pause();
+        gameView.showPauseMenu();
+    }
+
+    public void resume() {
+        if (!flow.isPaused()) return;
+        boolean wasRunning = flow.resume();
+        gameView.hideMenu();
+        if (wasRunning) animation.play();
+    }
+
+    public void restart() {
+        reset();
+    }
+
+    public void returnToMainMenu() {
+        animation.stop();
+        returnToMenu.run();
     }
 
     private void reset() {
         animation.jumpTo(Duration.ZERO);
         animation.stop();
         session.reset();
+        flow.reset();
+        gameView.hideMenu();
+        gameView.resetTurns();
         animation.setRate(session.getSpeed());
         direction = Direction.LEFT;
         keyPressed = false;

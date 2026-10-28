@@ -14,6 +14,8 @@ import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.scene.layout.VBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -35,6 +37,12 @@ public class GameView {
     private Label gameOverLabel;
     private Label gameWonLabel;
     private Label scoreLabel;
+    private VBox menu;
+    private Label menuTitle;
+    private Label menuDetails;
+    private Button resumeButton;
+    private Button restartButton;
+    private Button mainMenuButton;
     private boolean gameOverVis = false;
     private boolean gameWonVis = false;
     private final ImageView imageHead = new ImageView(new Image("resources/views/res/snakehead.png"));
@@ -84,11 +92,62 @@ public class GameView {
         scoreLabel.getStylesheets().add(css);
         scoreLabel.setFont(new Font("Arial", 20));
         scoreLabel.setVisible(true);
+
+        menuTitle = new Label();
+        menuDetails = new Label();
+        resumeButton = new Button("Resume");
+        restartButton = new Button("Restart");
+        mainMenuButton = new Button("Main Menu");
+        resumeButton.setId("resumeButton");
+        restartButton.setId("restartButton");
+        mainMenuButton.setId("mainMenuButton");
+        menu = new VBox(12, menuTitle, menuDetails, resumeButton, restartButton, mainMenuButton);
+        menu.setId("gameMenu");
+        menu.setAlignment(Pos.CENTER);
+        menu.setStyle("-fx-background-color: rgba(20, 24, 30, 0.88); -fx-padding: 18;");
+        menuTitle.setStyle("-fx-text-fill: white; -fx-font-size: 25;");
+        menuDetails.setStyle("-fx-text-fill: white; -fx-font-size: 16;");
+        hideMenu();
+    }
+
+    /** Connects menu buttons to the controller without exposing the controls. */
+    public void setMenuActions(Runnable resume, Runnable restart, Runnable mainMenu) {
+        resumeButton.setOnAction(event -> resume.run());
+        restartButton.setOnAction(event -> restart.run());
+        mainMenuButton.setOnAction(event -> mainMenu.run());
+    }
+
+    public void showPauseMenu() {
+        menuTitle.setText("Paused");
+        menuDetails.setText("P / Esc: Resume     Tab: Restart");
+        resumeButton.setVisible(true);
+        resumeButton.setManaged(true);
+        menu.setManaged(true);
+        menu.setVisible(true);
+    }
+
+    public void showEndMenu(boolean won) {
+        menuTitle.setText(won ? "You won!" : "Game over");
+        menuDetails.setText("Final score: " + game.getScorePoints());
+        resumeButton.setVisible(false);
+        resumeButton.setManaged(false);
+        menu.setManaged(true);
+        menu.setVisible(true);
+    }
+
+    public void hideMenu() {
+        menu.setVisible(false);
+        menu.setManaged(false);
+    }
+
+    /** Clears old turn sprites when a round is restarted. */
+    public void resetTurns() {
+        for (int[] column : turnArray) java.util.Arrays.fill(column, 0);
     }
 
     /** Adds the board and its labels to the game pane in display order. */
     public void attachTo(StackPane gamePane) {
-        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel);
+        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, menu);
         gamePane.setPadding(new Insets(20));
         StackPane.setAlignment(gameOverLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(gameWonLabel, Pos.TOP_CENTER);
