@@ -6,6 +6,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 
 import java.awt.*;
 
+/** Renders the game board and owns the snake's sprite images. */
 public class GameView {
 
     public Canvas gridCanvas;
@@ -24,6 +26,10 @@ public class GameView {
     public Label scoreLabel;
     private boolean gameOverVis = false;
     private boolean gameWonVis = false;
+    private final ImageView imageHead = new ImageView(new Image("resources/views/res/snakehead.png"));
+    private final ImageView imageBody = new ImageView(new Image("resources/views/res/snakebody.png"));
+    private final ImageView imageTurn = new ImageView(new Image("resources/views/res/snaketurnleft.png"));
+    private final ImageView imageTail = new ImageView(new Image("resources/views/res/snaketail.png"));
 
     private Game game;
     private double initX;
@@ -125,20 +131,20 @@ public class GameView {
     }
 
     private void drawHead(Snake snek) {
-        snek.getImageViewHead().setRotate(snek.getSnakeDir());
+        imageHead.setRotate(snek.getSnakeDir());
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
-        Image rotatedImage = snek.getImageViewHead().snapshot(params, null);
+        Image rotatedImage = imageHead.snapshot(params, null);
         gc.drawImage(rotatedImage, (snek.getHead().x * game.getMultiplier()) * fullScale, (snek.getHead().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale * fullScale, game.getMultiplier() * fullScale * fullScale);
     }
 
     private void drawBody(Snake snek, Point point, int index) {
         Image rotatedImage;
         if (snek.getBody().size() <= 1) {
-            snek.getImageViewTail().setRotate(snek.getSnakeDir());
+            imageTail.setRotate(snek.getSnakeDir());
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
-            rotatedImage = snek.getImageViewTail().snapshot(params, null);
+            rotatedImage = imageTail.snapshot(params, null);
         } else if (index == 0) {
             int rotateTail;
             if (snek.getBody().get(1).getX() == snek.getBody().get(0).getX() && snek.getBody().get(1).getY() == snek.getBody().get(0).getY() - 1) {
@@ -150,20 +156,20 @@ public class GameView {
             } else {
                 rotateTail = 90;
             }
-            snek.getImageViewTail().setRotate(rotateTail);
+            imageTail.setRotate(rotateTail);
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
-            rotatedImage = snek.getImageViewTail().snapshot(params, null);
+            rotatedImage = imageTail.snapshot(params, null);
         } else if (index > 0 && (turnArray[(int) snek.getBody().get(index).getX()][(int) snek.getBody().get(index).getY()] != 0)) {
-            snek.getImageViewTurn().setRotate(90 * turnArray[(int) snek.getBody().get(index).getX()][(int) snek.getBody().get(index).getY()]);
+            imageTurn.setRotate(90 * turnArray[(int) snek.getBody().get(index).getX()][(int) snek.getBody().get(index).getY()]);
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
-            rotatedImage = snek.getImageViewTurn().snapshot(params, null);
+            rotatedImage = imageTurn.snapshot(params, null);
         } else {
-            snek.getImageViewBody().setRotate(snek.getBodyDir(index));
+            imageBody.setRotate(snek.getBodyDir(index));
             SnapshotParameters params = new SnapshotParameters();
             params.setFill(Color.TRANSPARENT);
-            rotatedImage = snek.getImageViewBody().snapshot(params, null);
+            rotatedImage = imageBody.snapshot(params, null);
         }
 
         if (turnArray[(int) snek.getBody().get(0).getX()][(int) snek.getBody().get(0).getY()] != 0) {
