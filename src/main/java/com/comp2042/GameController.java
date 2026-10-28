@@ -178,23 +178,48 @@ public class GameController {
         game.addPoints(coin.getPoints());
     }
 
-    private void newCoin() {
-        if (game.isPowerUp()) {
-            Random rnd = new Random();
-            int ran = rnd.nextInt(12);
-            if (ran == 1) {
-                coin = new GoldCoin(game.getWidth(), game.getHeight(), snek, obstacle);
-            } else if (ran == 1) {
-                coin = new RainbowCoin(game.getWidth(), game.getHeight(), snek, obstacle);
-            } else if (ran == 3) {
-                coin = new BlueCoin(game.getWidth(), game.getHeight(), snek, obstacle);
-            } else if (ran == 4 && obstacle.getObstacles().size() == 0) {
-                coin = new SilverCoin(game.getWidth(), game.getHeight(), snek, obstacle);
-            } else {
-                coin = new Coin(game.getWidth(), game.getHeight(), snek, obstacle);
-            }
-        } else {
-            coin = new Coin(game.getWidth(), game.getHeight(), snek, obstacle);
+    /**
+     * Coin categories selected before creating their JavaFX-backed objects.
+     */
+    enum CoinType {
+        NORMAL, GOLD, RAINBOW, BLUE, SILVER
+    }
+
+    /**
+     * Chooses a coin category without creating images or starting JavaFX.
+     *
+     * @param roll the random value from 0 to 11
+     * @param powerUpsEnabled whether special coins are enabled
+     * @param hasObstacles whether the board already contains obstacles
+     * @return the category of coin to create
+     */
+    static CoinType selectCoinType(int roll, boolean powerUpsEnabled, boolean hasObstacles) {
+        if (!powerUpsEnabled) {
+            return CoinType.NORMAL;
         }
+        if (roll == 1) {
+            return CoinType.GOLD;
+        } else if (roll == 2) {
+            return CoinType.RAINBOW;
+        } else if (roll == 3) {
+            return CoinType.BLUE;
+        } else if (roll == 4 && !hasObstacles) {
+            return CoinType.SILVER;
+        } else {
+            return CoinType.NORMAL;
+        }
+    }
+
+    private void newCoin() {
+        int roll = game.isPowerUp() ? new Random().nextInt(12) : 0;
+        CoinType coinType = selectCoinType(roll, game.isPowerUp(),
+                !obstacle.getObstacles().isEmpty());
+        coin = switch (coinType) {
+            case GOLD -> new GoldCoin(game.getWidth(), game.getHeight(), snek, obstacle);
+            case RAINBOW -> new RainbowCoin(game.getWidth(), game.getHeight(), snek, obstacle);
+            case BLUE -> new BlueCoin(game.getWidth(), game.getHeight(), snek, obstacle);
+            case SILVER -> new SilverCoin(game.getWidth(), game.getHeight(), snek, obstacle);
+            case NORMAL -> new Coin(game.getWidth(), game.getHeight(), snek, obstacle);
+        };
     }
 }
