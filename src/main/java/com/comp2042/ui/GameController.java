@@ -55,6 +55,7 @@ public class GameController {
             direction = Direction.LEFT;
             keyPressed = false;
             gameView.resetTurns();
+            gameView.showStartHint();
             gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
             gameView.updateScoreLabel();
             gameView.updateProgress(session);
@@ -117,6 +118,7 @@ public class GameController {
 
         Direction requested = directionForKey(code);
         if (requested != null) {
+            gameView.hideStartHint();
             flow.start();
             animation.play();
             if (!direction.isOpposite(requested) && !keyPressed) {
@@ -164,6 +166,7 @@ public class GameController {
         flow.reset();
         gameView.hideMenu();
         gameView.resetTurns();
+        gameView.showStartHint();
         animation.setRate(session.getSpeed());
         direction = Direction.LEFT;
         keyPressed = false;

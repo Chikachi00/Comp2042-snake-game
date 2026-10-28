@@ -40,6 +40,7 @@ public class GameView {
     private Label scoreLabel;
     private Label progressLabel;
     private Label comboLabel;
+    private Label startHint;
     private VBox menu;
     private Label menuTitle;
     private Label menuDetails;
@@ -101,6 +102,10 @@ public class GameView {
         comboLabel = new Label();
         comboLabel.setId("comboLabel");
         comboLabel.setStyle("-fx-font-size: 15; -fx-text-fill: #1c2d20;");
+        startHint = new Label("Press an arrow key to start");
+        startHint.setId("startHint");
+        startHint.setStyle("-fx-font-size: 15; -fx-text-fill: #304d32; -fx-background-color: rgba(255,255,245,0.85); -fx-padding: 8;");
+        startHint.setMouseTransparent(true);
 
         menuTitle = new Label();
         menuDetails = new Label();
@@ -136,6 +141,8 @@ public class GameView {
     }
 
     public void showEndMenu(boolean won) {
+        gameOverLabel.setVisible(false);
+        gameWonLabel.setVisible(false);
         menuTitle.setText(won ? "You won!" : "Game over");
         menuDetails.setText("Final score: " + game.getScorePoints());
         resumeButton.setVisible(false);
@@ -149,6 +156,9 @@ public class GameView {
         menu.setManaged(false);
     }
 
+    public void showStartHint() { startHint.setVisible(true); }
+    public void hideStartHint() { startHint.setVisible(false); }
+
     /** Clears old turn sprites when a round is restarted. */
     public void resetTurns() {
         for (int[] column : turnArray) java.util.Arrays.fill(column, 0);
@@ -156,7 +166,7 @@ public class GameView {
 
     /** Adds the board and its labels to the game pane in display order. */
     public void attachTo(StackPane gamePane) {
-        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, comboLabel, menu);
+        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, comboLabel, startHint, menu);
         gamePane.setPadding(new Insets(20));
         StackPane.setAlignment(gameOverLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(gameWonLabel, Pos.TOP_CENTER);
