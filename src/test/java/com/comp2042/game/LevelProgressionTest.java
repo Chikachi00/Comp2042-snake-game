@@ -9,6 +9,10 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LevelProgressionTest {
+    private static GameSession slowSession(Game game, Level level) {
+        java.util.concurrent.atomic.AtomicLong clock = new java.util.concurrent.atomic.AtomicLong();
+        return new GameSession(game, level, () -> clock.getAndAdd(6_000_000_000L));
+    }
     private static void coinAhead(GameSession session) throws Exception {
         Point head = session.getSnake().getHead();
         Field coin = GameSession.class.getDeclaredField("coin");
@@ -21,7 +25,7 @@ class LevelProgressionTest {
     }
     @Test void advancesThroughLevelsAndKeepsScore() throws Exception {
         Game game = new Game(20, 20, false, 'N');
-        GameSession session = new GameSession(game, Level.ONE);
+        GameSession session = slowSession(game, Level.ONE);
         for (int i = 0; i < 4; i++) assertEquals(GameSession.StepResult.COIN_EATEN, eatLeft(session));
         assertEquals(GameSession.StepResult.LEVEL_COMPLETED, eatLeft(session));
         assertEquals(Level.TWO, session.getLevel());
@@ -40,7 +44,7 @@ class LevelProgressionTest {
     }
     @Test void selectedStartingLevelAndRestartArePreserved() throws Exception {
         Game game = new Game(20, 20, false, 'N');
-        GameSession session = new GameSession(game, Level.TWO);
+        GameSession session = slowSession(game, Level.TWO);
         assertEquals(8, session.getObstacle().getObstacles().size());
         for (int i = 0; i < 8; i++) eatLeft(session);
         assertEquals(Level.THREE, session.getLevel());
@@ -53,7 +57,7 @@ class LevelProgressionTest {
     }
     @Test void startingAtFinalLevelWinsAfterItsObjective() throws Exception {
         Game game = new Game(20, 20, false, 'N');
-        GameSession session = new GameSession(game, Level.THREE);
+        GameSession session = slowSession(game, Level.THREE);
         for (int i = 0; i < 9; i++) assertEquals(GameSession.StepResult.COIN_EATEN, eatLeft(session));
         assertEquals(GameSession.StepResult.WON, eatLeft(session));
         assertEquals(50, game.getScorePoints());

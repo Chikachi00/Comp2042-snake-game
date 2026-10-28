@@ -10,6 +10,7 @@ public final class GameSession {
     private final Obstacle obstacle;
     private final CoinFactory coinFactory;
     private final CoinEffectService coinEffects;
+    private final ComboTracker combo;
     private Snake snake;
     private Coin coin;
     private double speed;
@@ -23,6 +24,10 @@ public final class GameSession {
 
     /** Starts a run at the selected level on the standard 20 by 20 board. */
     public GameSession(Game game, Level startingLevel) {
+        this(game, startingLevel, System::nanoTime);
+    }
+
+    GameSession(Game game, Level startingLevel, java.util.function.LongSupplier clock) {
         if (game.getWidth() != 20 || game.getHeight() != 20) {
             throw new IllegalArgumentException("Levels require a 20 by 20 board");
         }
@@ -30,6 +35,7 @@ public final class GameSession {
         this.obstacle = new Obstacle(game.getWidth(), game.getHeight());
         this.coinFactory = new CoinFactory();
         this.coinEffects = new CoinEffectService();
+        this.combo = new ComboTracker(clock);
         this.startingLevel = java.util.Objects.requireNonNull(startingLevel, "startingLevel");
         initializeLevel(startingLevel);
     }
@@ -42,6 +48,7 @@ public final class GameSession {
         this.obstacle = obstacle;
         this.coinFactory = coinFactory;
         this.coinEffects = coinEffects;
+        this.combo = new ComboTracker(System::nanoTime);
         this.speed = game.getSpeed();
     }
 
@@ -61,6 +68,7 @@ public final class GameSession {
         speed = coinEffects.apply(coin, game, snake, obstacle);
         game.incScore();
         if (level != null) {
+            game.addPoints(combo.recordCoin());
             levelCoins++;
             if (levelCoins >= level.target() || game.gameWon()) {
                 if (level.next() == null) {
@@ -99,6 +107,7 @@ public final class GameSession {
     private void initializeLevel(Level next) {
         level = next;
         levelCoins = 0;
+        combo.reset();
         obstacle.setLayout(next.obstaclePositions());
         game.startLevel(obstacle.getObstacles().size());
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
@@ -108,6 +117,11 @@ public final class GameSession {
         coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
         speed = game.getSpeed();
     }
+
+    public void pause() { combo.pause(); }
+    public void resume() { combo.resume(); }
+    public int getComboCount() { return combo.count(); }
+    public int getComboBonus() { return combo.lastBonus(); }
 
     public Level getLevel() { return level; }
     public int getLevelCoins() { return levelCoins; }

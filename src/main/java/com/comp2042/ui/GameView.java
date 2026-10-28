@@ -39,6 +39,7 @@ public class GameView {
     private Label gameWonLabel;
     private Label scoreLabel;
     private Label progressLabel;
+    private Label comboLabel;
     private VBox menu;
     private Label menuTitle;
     private Label menuDetails;
@@ -97,6 +98,9 @@ public class GameView {
         progressLabel = new Label();
         progressLabel.setId("progressLabel");
         progressLabel.setStyle("-fx-font-size: 15; -fx-text-fill: #1c2d20;");
+        comboLabel = new Label();
+        comboLabel.setId("comboLabel");
+        comboLabel.setStyle("-fx-font-size: 15; -fx-text-fill: #1c2d20;");
 
         menuTitle = new Label();
         menuDetails = new Label();
@@ -152,12 +156,13 @@ public class GameView {
 
     /** Adds the board and its labels to the game pane in display order. */
     public void attachTo(StackPane gamePane) {
-        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, menu);
+        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, comboLabel, menu);
         gamePane.setPadding(new Insets(20));
         StackPane.setAlignment(gameOverLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(gameWonLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(scoreLabel, Pos.BOTTOM_CENTER);
         StackPane.setAlignment(progressLabel, Pos.TOP_LEFT);
+        StackPane.setAlignment(comboLabel, Pos.TOP_RIGHT);
     }
 
     public void scaleToFullscreen(boolean fullScreen, Stage primaryStage, Obstacle obstacle, Snake snek, Coin coin) {
@@ -309,6 +314,8 @@ public class GameView {
         if (session.getLevel() != null) {
             progressLabel.setText(session.getLevel() + "  |  Coins: " + session.getLevelCoins()
                     + "/" + session.getLevel().target());
+            int count = session.getComboCount();
+            comboLabel.setText(count == 0 ? "" : "Combo x" + count + " (+" + session.getComboBonus() + ")");
         }
     }
 

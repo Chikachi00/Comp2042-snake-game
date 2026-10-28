@@ -136,12 +136,14 @@ public class GameController {
     public void pause() {
         if (!flow.pause()) return;
         animation.pause();
+        session.pause();
         gameView.showPauseMenu();
     }
 
     public void resume() {
         if (!flow.isPaused()) return;
         boolean wasRunning = flow.resume();
+        session.resume();
         gameView.hideMenu();
         if (wasRunning) animation.play();
     }
