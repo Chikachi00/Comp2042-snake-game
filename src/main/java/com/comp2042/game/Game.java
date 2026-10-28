@@ -62,6 +62,12 @@ public class Game {
         return height;
     }
 
+    void startLevel(int fixedObstacles) {
+        score = 0;
+        maxScore = width * height - 2 - fixedObstacles;
+        boardFull = false;
+    }
+
     public void resetScore() {
         score = 0;
         scorePoints = 0;

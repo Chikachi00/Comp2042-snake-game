@@ -2,10 +2,13 @@ package com.comp2042.ui;
 
 import com.comp2042.game.Coin;
 import com.comp2042.game.Game;
-import com.comp2042.game.Obstacle;
+import com.comp2042.game.GameSession;
+import com.comp2042.game.Level;
 import com.comp2042.game.Snake;
 
 import javafx.scene.Scene;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -17,6 +20,12 @@ public class MainMenuController {
     private static final char DIFFICULTY = 'N';
 
     private Scene gameScene;
+    @FXML private ComboBox<Level> levelSelector;
+
+    @FXML private void initialize() {
+        levelSelector.getItems().setAll(Level.values());
+        levelSelector.setValue(Level.ONE);
+    }
 
     private final ViewManager viewManager;
 
@@ -32,12 +41,12 @@ public class MainMenuController {
 
     private void launchSnake(Stage gameStage) {
         Game game = new Game(X_VALUE, Y_VALUE, POWER_UP, DIFFICULTY);
-        Obstacle obstacle = new Obstacle(game.getWidth(), game.getHeight());
-        Snake snek = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
-        Coin coin = new Coin(game.getWidth(), game.getHeight(), snek, obstacle);
+        GameSession session = new GameSession(game, levelSelector.getValue());
+        Snake snek = session.getSnake();
+        Coin coin = session.getCoin();
 
         GameView gameView = new GameView(game);
-        GameController controller = new GameController(snek, coin, game, gameView, obstacle, gameStage, viewManager::showMainMenu);
+        GameController controller = new GameController(session, gameView, gameStage, viewManager::showMainMenu);
 
         StackPane gamePane = new StackPane();
         gameScene = new Scene(gamePane, game.getWidth() * game.getMultiplier(), game.getHeight() * game.getMultiplier());
@@ -47,6 +56,8 @@ public class MainMenuController {
         gameView.makeScene(gameScene, snek, coin);
         gameView.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);
         gameView.attachTo(gamePane);
+        gameView.updateProgress(session);
+        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
     }
 
 }

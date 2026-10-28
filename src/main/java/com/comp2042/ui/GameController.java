@@ -25,9 +25,8 @@ public class GameController {
     private boolean keyPressed = false;
     private final GameFlow flow = new GameFlow();
 
-    public GameController(Snake snek, Coin coin, Game game, GameView gameView,
-                          Obstacle obstacle, Stage stage, Runnable returnToMenu) {
-        this.session = new GameSession(game, snek, coin, obstacle);
+    public GameController(GameSession session, GameView gameView, Stage stage, Runnable returnToMenu) {
+        this.session = java.util.Objects.requireNonNull(session, "session");
         this.gameView = gameView;
         this.stage = stage;
         this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
@@ -50,10 +49,22 @@ public class GameController {
         if (result == GameSession.StepResult.COIN_EATEN || result == GameSession.StepResult.WON) {
             animation.setRate(session.getSpeed());
         }
+        if (result == GameSession.StepResult.LEVEL_COMPLETED) {
+            stopAnimation();
+            flow.reset();
+            direction = Direction.LEFT;
+            keyPressed = false;
+            gameView.resetTurns();
+            gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
+            gameView.updateScoreLabel();
+            gameView.updateProgress(session);
+            return;
+        }
         if (result == GameSession.StepResult.WON) {
             gameView.drawGrid(session.getCoin(), snake, session.getObstacle());
             gameView.gameWon();
             gameView.updateScoreLabel();
+            gameView.updateProgress(session);
             stopAnimation();
             flow.end();
             gameView.showEndMenu(true);
@@ -67,6 +78,7 @@ public class GameController {
         gameView.gameWon();
         gameView.gameOver(snake);
         gameView.updateScoreLabel();
+        gameView.updateProgress(session);
         if (snake.getDead()) {
             stopAnimation();
             flow.end();
@@ -157,6 +169,7 @@ public class GameController {
         gameView.gameWon();
         gameView.gameOver(session.getSnake());
         gameView.updateScoreLabel();
+        gameView.updateProgress(session);
         gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
     }
 }

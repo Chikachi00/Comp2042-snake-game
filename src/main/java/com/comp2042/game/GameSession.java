@@ -4,7 +4,7 @@ import java.util.Optional;
 
 /** Maintains the rules and state of a single game, independently of the UI timer. */
 public final class GameSession {
-    public enum StepResult { MOVED, COIN_EATEN, WON, DIED, ALREADY_ENDED }
+    public enum StepResult { MOVED, COIN_EATEN, LEVEL_COMPLETED, WON, DIED, ALREADY_ENDED }
 
     private final Game game;
     private final Obstacle obstacle;
@@ -13,9 +13,25 @@ public final class GameSession {
     private Snake snake;
     private Coin coin;
     private double speed;
+    private Level startingLevel;
+    private Level level;
+    private int levelCoins;
 
     public GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle) {
         this(game, snake, coin, obstacle, new CoinFactory(), new CoinEffectService());
+    }
+
+    /** Starts a run at the selected level on the standard 20 by 20 board. */
+    public GameSession(Game game, Level startingLevel) {
+        if (game.getWidth() != 20 || game.getHeight() != 20) {
+            throw new IllegalArgumentException("Levels require a 20 by 20 board");
+        }
+        this.game = game;
+        this.obstacle = new Obstacle(game.getWidth(), game.getHeight());
+        this.coinFactory = new CoinFactory();
+        this.coinEffects = new CoinEffectService();
+        this.startingLevel = java.util.Objects.requireNonNull(startingLevel, "startingLevel");
+        initializeLevel(startingLevel);
     }
 
     GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle,
@@ -44,6 +60,17 @@ public final class GameSession {
 
         speed = coinEffects.apply(coin, game, snake, obstacle);
         game.incScore();
+        if (level != null) {
+            levelCoins++;
+            if (levelCoins >= level.target() || game.gameWon()) {
+                if (level.next() == null) {
+                    game.markBoardFull();
+                    return StepResult.WON;
+                }
+                initializeLevel(level.next());
+                return StepResult.LEVEL_COMPLETED;
+            }
+        }
         if (!game.gameWon()) {
             Optional<Coin> nextCoin = coinFactory.createCoin(game, snake, obstacle);
             if (nextCoin.isPresent()) {
@@ -57,12 +84,33 @@ public final class GameSession {
 
     /** Starts a new round using the existing game settings. */
     public void reset() {
+        if (startingLevel != null) {
+            game.resetScore();
+            initializeLevel(startingLevel);
+            return;
+        }
         obstacle.reset();
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
         coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
         speed = game.getSpeed();
         game.resetScore();
     }
+
+    private void initializeLevel(Level next) {
+        level = next;
+        levelCoins = 0;
+        obstacle.setLayout(next.obstaclePositions());
+        game.startLevel(obstacle.getObstacles().size());
+        snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
+        if (obstacle.occupies(snake.getHead()) || snake.getBody().stream().anyMatch(obstacle::occupies)) {
+            throw new IllegalStateException("Level obstacles overlap the starting snake");
+        }
+        coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
+        speed = game.getSpeed();
+    }
+
+    public Level getLevel() { return level; }
+    public int getLevelCoins() { return levelCoins; }
 
     public boolean isOver() { return snake.getDead() || game.gameWon(); }
     public Snake getSnake() { return snake; }

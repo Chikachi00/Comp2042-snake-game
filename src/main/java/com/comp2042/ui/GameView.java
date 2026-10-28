@@ -4,6 +4,7 @@ import com.comp2042.game.Coin;
 import com.comp2042.game.CoinType;
 import com.comp2042.game.Direction;
 import com.comp2042.game.Game;
+import com.comp2042.game.GameSession;
 import com.comp2042.game.Obstacle;
 import com.comp2042.game.Snake;
 
@@ -37,6 +38,7 @@ public class GameView {
     private Label gameOverLabel;
     private Label gameWonLabel;
     private Label scoreLabel;
+    private Label progressLabel;
     private VBox menu;
     private Label menuTitle;
     private Label menuDetails;
@@ -92,6 +94,9 @@ public class GameView {
         scoreLabel.getStylesheets().add(css);
         scoreLabel.setFont(new Font("Arial", 20));
         scoreLabel.setVisible(true);
+        progressLabel = new Label();
+        progressLabel.setId("progressLabel");
+        progressLabel.setStyle("-fx-font-size: 15; -fx-text-fill: #1c2d20;");
 
         menuTitle = new Label();
         menuDetails = new Label();
@@ -147,11 +152,12 @@ public class GameView {
 
     /** Adds the board and its labels to the game pane in display order. */
     public void attachTo(StackPane gamePane) {
-        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, menu);
+        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, menu);
         gamePane.setPadding(new Insets(20));
         StackPane.setAlignment(gameOverLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(gameWonLabel, Pos.TOP_CENTER);
         StackPane.setAlignment(scoreLabel, Pos.BOTTOM_CENTER);
+        StackPane.setAlignment(progressLabel, Pos.TOP_LEFT);
     }
 
     public void scaleToFullscreen(boolean fullScreen, Stage primaryStage, Obstacle obstacle, Snake snek, Coin coin) {
@@ -296,6 +302,13 @@ public class GameView {
         } else if (!game.gameWon() && gameWonVis) {
             gameWonVis = false;
             gameWonLabel.setVisible(false);
+        }
+    }
+
+    public void updateProgress(GameSession session) {
+        if (session.getLevel() != null) {
+            progressLabel.setText(session.getLevel() + "  |  Coins: " + session.getLevelCoins()
+                    + "/" + session.getLevel().target());
         }
     }
 

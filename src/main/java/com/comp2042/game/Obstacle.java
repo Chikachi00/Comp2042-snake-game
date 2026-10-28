@@ -96,6 +96,18 @@ public class Obstacle {
         return obstacles.contains(position);
     }
 
+    void setLayout(List<Point> positions) {
+        Set<Point> unique = new HashSet<>();
+        for (Point p : positions) {
+            if (p.x < 0 || p.x >= x || p.y < 0 || p.y >= y || !unique.add(p)) {
+                throw new IllegalArgumentException("Invalid obstacle position: " + p);
+            }
+        }
+        if (unique.size() > MAX_OBSTACLES) throw new IllegalArgumentException("Too many obstacles");
+        obstacles.clear();
+        positions.forEach(p -> obstacles.add(new Point(p)));
+    }
+
     public void reset() {
         obstacles.clear();
     }
