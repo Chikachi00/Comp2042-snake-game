@@ -41,12 +41,15 @@ public class GameController {
         this.stage = stage;
 
         this.obstacle = obstacle;
+        this.stage.setOnHidden(event -> animation.stop());
         animation.setCycleCount(Animation.INDEFINITE);
         animation.setRate(game.getSpeed());
     }
 
     private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
         if (snek.getDead()) {
+            stopAnimation();
+            gameView.gameOver(snek);
             return;
         } else {
 
@@ -65,6 +68,9 @@ public class GameController {
                 game.incScore();
                 if (game.gameWon()) {
                     gameView.drawGrid(coin, snek, obstacle, gameView.gc, false, 0);
+                    gameView.gameWon();
+                    gameView.updateScoreLabel();
+                    stopAnimation();
                     return;
                 }
                 newCoin();
@@ -79,11 +85,18 @@ public class GameController {
             gameView.gameWon();
             gameView.gameOver(snek);
             gameView.updateScoreLabel();
+            if (snek.getDead()) {
+                stopAnimation();
+            }
         }
     }));
 
+    private void stopAnimation() {
+        animation.stop();
+    }
+
     public void handle(KeyEvent event) {
-        if (event.getCode().isArrowKey()) animation.play();
+        if (event.getCode().isArrowKey() && !snek.getDead() && !game.gameWon()) animation.play();
 
         if (isDirectionAllowed(key, event.getCode()) && !keyPressed) {
             lastKey = key;
@@ -116,6 +129,7 @@ public class GameController {
         }
 
         if (event.getCode().equals(KeyCode.ESCAPE)) {
+            animation.stop();
             MainMenuController mainMenuController = new MainMenuController();
             mainMenuController.getViewManager().getPrimaryStage().show();
             mainMenuController.getViewManager().getGameStage().close();
