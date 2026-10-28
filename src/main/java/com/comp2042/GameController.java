@@ -5,113 +5,83 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.File;
-import java.util.Optional;
-
 public class GameController {
-    private Snake snek;
-    private Coin coin;
-    private GameView gameView;
-    private Game game;
-    private Stage stage;
-    private String coinSoundPath = "resources/views/res/coinSound.wav";
-    private Obstacle obstacle;
+    private final GameSession session;
+    private final GameView gameView;
+    private final Stage stage;
 
     private KeyCode key = KeyCode.LEFT;
     private KeyCode lastKey = KeyCode.LEFT;
     private boolean keyPressed = false;
-    private final CoinFactory coinFactory = new CoinFactory();
-    private final CoinEffectService coinEffects = new CoinEffectService();
-
-    private int legacyScoreMultiplier = 2;
-
-    private void calculateBonusScore() {
-        int bonus = game.getScorePoints() * legacyScoreMultiplier;
-        System.out.println("Bonus score: " + bonus);
-    }
 
     public GameController(Snake snek, Coin coin, Game game, GameView gameView, Obstacle obstacle, Stage stage) {
-        this.snek = snek;
-        this.coin = coin;
+        this.session = new GameSession(game, snek, coin, obstacle);
         this.gameView = gameView;
-        this.game = game;
         this.stage = stage;
-
-        this.obstacle = obstacle;
         this.stage.setOnHidden(event -> animation.stop());
         animation.setCycleCount(Animation.INDEFINITE);
-        animation.setRate(game.getSpeed());
+        animation.setRate(session.getSpeed());
     }
 
-    private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-        if (snek.getDead()) {
+    private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> advanceGame()));
+
+    private void advanceGame() {
+        GameSession.StepResult result = session.advance(toMovement(key));
+        Snake snake = session.getSnake();
+
+        if (result == GameSession.StepResult.ALREADY_ENDED) {
             stopAnimation();
-            gameView.gameOver(snek);
+            gameView.gameOver(snake);
             return;
-        } else {
-
-            if (key.equals(KeyCode.LEFT)) {
-                snek.move('L');
-            } else if (key.equals(KeyCode.RIGHT)) {
-                snek.move('R');
-            } else if (key.equals(KeyCode.UP)) {
-                snek.move('U');
-            } else if (key.equals(KeyCode.DOWN)) {
-                snek.move('D');
-            }
-
-            if (!snek.getDead() && snek.ateCoin(coin)) {
-                applyCoinEffect();
-                game.incScore();
-                if (!game.gameWon() && !newCoin()) {
-                    game.markBoardFull();
-                }
-                if (game.gameWon()) {
-                    gameView.drawGrid(coin, snek, obstacle, gameView.gc, false, 0);
-                    gameView.gameWon();
-                    gameView.updateScoreLabel();
-                    stopAnimation();
-                    return;
-                }
-            }
-
-            keyPressed = false;
-
-            if (!snek.getDead() || snek.hitSelf()) {
-                gameView.drawGrid(coin, snek, obstacle, gameView.gc, false, 0);
-            }
-
-            gameView.gameWon();
-            gameView.gameOver(snek);
-            gameView.updateScoreLabel();
-            if (snek.getDead()) {
-                stopAnimation();
-            }
         }
-    }));
+        if (result == GameSession.StepResult.COIN_EATEN || result == GameSession.StepResult.WON) {
+            animation.setRate(session.getSpeed());
+        }
+        if (result == GameSession.StepResult.WON) {
+            gameView.drawGrid(session.getCoin(), snake, session.getObstacle(), gameView.gc, false, 0);
+            gameView.gameWon();
+            gameView.updateScoreLabel();
+            stopAnimation();
+            return;
+        }
+
+        keyPressed = false;
+        if (!snake.getDead() || snake.hitSelf()) {
+            gameView.drawGrid(session.getCoin(), snake, session.getObstacle(), gameView.gc, false, 0);
+        }
+        gameView.gameWon();
+        gameView.gameOver(snake);
+        gameView.updateScoreLabel();
+        if (snake.getDead()) {
+            stopAnimation();
+        }
+    }
+
+    private static char toMovement(KeyCode direction) {
+        return switch (direction) {
+            case LEFT -> 'L';
+            case RIGHT -> 'R';
+            case UP -> 'U';
+            case DOWN -> 'D';
+            default -> throw new IllegalArgumentException("Not a movement direction: " + direction);
+        };
+    }
 
     private void stopAnimation() {
         animation.stop();
     }
 
-    private void applyCoinEffect() {
-        animation.setRate(coinEffects.apply(coin, game, snek, obstacle));
-    }
-
     public void handle(KeyEvent event) {
-        if (event.getCode().isArrowKey() && !snek.getDead() && !game.gameWon()) animation.play();
+        if (event.getCode().isArrowKey() && !session.isOver()) animation.play();
 
-        if (!snek.getDead() && !game.gameWon()
-                && isDirectionAllowed(key, event.getCode()) && !keyPressed) {
+        if (!session.isOver() && isDirectionAllowed(key, event.getCode()) && !keyPressed) {
             lastKey = key;
             key = event.getCode();
             keyPressed = true;
-            gameView.turnDir(snek, lastKey, key);
+            gameView.turnDir(session.getSnake(), lastKey, key);
         }
 
         if (event.getCode().equals(KeyCode.P)) {
@@ -120,18 +90,17 @@ public class GameController {
 
         if (event.getCode().equals(KeyCode.TAB)) {
             reset();
-            gameView.scoreLabel.setText("Score: " + game.getScorePoints());
         }
 
         if (event.getCode().equals(KeyCode.PLUS)) {
-            gameView.scaleToFullscreen(true, stage, obstacle, snek, coin);
+            gameView.scaleToFullscreen(true, stage, session.getObstacle(), session.getSnake(), session.getCoin());
             gameView.gameOverLabel.setStyle("-fx-font-size: 50;");
             gameView.gameWonLabel.setStyle("-fx-font-size: 50;");
             gameView.scoreLabel.setStyle("-fx-font-size: 35;");
         }
 
         if (event.getCode().equals(KeyCode.MINUS)) {
-            gameView.scaleToFullscreen(false, stage, obstacle, snek, coin);
+            gameView.scaleToFullscreen(false, stage, session.getObstacle(), session.getSnake(), session.getCoin());
             gameView.gameOverLabel.setStyle("-fx-font-size: 15;");
             gameView.gameWonLabel.setStyle("-fx-font-size: 15;");
             gameView.scoreLabel.setStyle("-fx-font-size: 15;");
@@ -163,33 +132,17 @@ public class GameController {
     }
 
     private void reset() {
-
         animation.jumpTo(Duration.ZERO);
         animation.stop();
-
-        obstacle.reset();
-        snek = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
-        coin = new Coin(game.getWidth(), game.getHeight(), snek, obstacle);
-
-        animation.setRate(game.getSpeed());
+        session.reset();
+        animation.setRate(session.getSpeed());
         key = KeyCode.LEFT;
         lastKey = KeyCode.LEFT;
         keyPressed = false;
-        game.resetScore();
 
         gameView.gameWon();
-        gameView.gameOver(snek);
+        gameView.gameOver(session.getSnake());
         gameView.updateScoreLabel();
-
-        gameView.drawGrid(coin, snek, obstacle, gameView.gc, false, 0);
-    }
-
-    private boolean newCoin() {
-        Optional<Coin> nextCoin = coinFactory.createCoin(game, snek, obstacle);
-        if (nextCoin.isEmpty()) {
-            return false;
-        }
-        coin = nextCoin.get();
-        return true;
+        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle(), gameView.gc, false, 0);
     }
 }
