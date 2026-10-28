@@ -1,7 +1,5 @@
 package com.comp2042;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -42,11 +40,7 @@ public class MainMenuController {
         gameScene.setOnKeyPressed(controller::handle);
 
         gameView.makeScene(gameScene, snek, coin);
-        gamePane.getChildren().addAll(gameView.gridCanvas, gameView.gameOverLabel, gameView.gameWonLabel, gameView.scoreLabel);
-        gamePane.setPadding(new Insets(20));
-        gamePane.setAlignment(gameView.gameOverLabel, Pos.TOP_CENTER);
-        gamePane.setAlignment(gameView.gameWonLabel, Pos.TOP_CENTER);
-        gamePane.setAlignment(gameView.scoreLabel, Pos.BOTTOM_CENTER);
+        gameView.attachTo(gamePane);
     }
 
     public ViewManager getViewManager() {

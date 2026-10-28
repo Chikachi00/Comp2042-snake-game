@@ -1,5 +1,7 @@
 package com.comp2042;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
@@ -8,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
@@ -19,12 +22,12 @@ import java.util.Map;
 /** Renders the game board and owns its sprite images. */
 public class GameView {
 
-    public Canvas gridCanvas;
-    public GraphicsContext gc;
+    private Canvas gridCanvas;
+    private GraphicsContext gc;
 
-    public Label gameOverLabel;
-    public Label gameWonLabel;
-    public Label scoreLabel;
+    private Label gameOverLabel;
+    private Label gameWonLabel;
+    private Label scoreLabel;
     private boolean gameOverVis = false;
     private boolean gameWonVis = false;
     private final ImageView imageHead = new ImageView(new Image("resources/views/res/snakehead.png"));
@@ -39,7 +42,7 @@ public class GameView {
             CoinType.SILVER, new Image("resources/views/res/silvercoin.png")
     );
 
-    private Game game;
+    private final Game game;
     private double initX;
     private double initY;
     private double fullScale = 1;
@@ -51,12 +54,11 @@ public class GameView {
     }
 
     public void makeScene(Scene scene, Snake snek, Coin coin) {
-        Scene gameScene = scene;
-        gridCanvas = new Canvas(gameScene.getWidth(), gameScene.getHeight());
+        gridCanvas = new Canvas(scene.getWidth(), scene.getHeight());
         initX = scene.getWidth();
         initY = scene.getHeight();
         gc = gridCanvas.getGraphicsContext2D();
-        drawGrid(coin, snek, gc);
+        drawBoardContents(coin, snek);
 
         gameOverLabel = new Label("GAME OVER");
         gameOverLabel.setId("gameOverLabel");
@@ -74,6 +76,15 @@ public class GameView {
         scoreLabel.getStylesheets().add(css);
         scoreLabel.setFont(new Font("Arial", 20));
         scoreLabel.setVisible(true);
+    }
+
+    /** Adds the board and its labels to the game pane in display order. */
+    public void attachTo(StackPane gamePane) {
+        gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel);
+        gamePane.setPadding(new Insets(20));
+        StackPane.setAlignment(gameOverLabel, Pos.TOP_CENTER);
+        StackPane.setAlignment(gameWonLabel, Pos.TOP_CENTER);
+        StackPane.setAlignment(scoreLabel, Pos.BOTTOM_CENTER);
     }
 
     public void scaleToFullscreen(boolean fullScreen, Stage primaryStage, Obstacle obstacle, Snake snek, Coin coin) {
@@ -100,30 +111,22 @@ public class GameView {
 
         gameOverLabel.setFont(new Font("Arial", 25 * fullScale));
         gameWonLabel.setFont(new Font("Arial", 25 * fullScale));
-        drawGrid(coin, snek, obstacle, gc, false, 0);
+        drawGrid(coin, snek, obstacle);
+        gameOverLabel.setStyle(fullScreen ? "-fx-font-size: 50;" : "-fx-font-size: 15;");
+        gameWonLabel.setStyle(fullScreen ? "-fx-font-size: 50;" : "-fx-font-size: 15;");
+        scoreLabel.setStyle(fullScreen ? "-fx-font-size: 35;" : "-fx-font-size: 15;");
     }
 
-    public void drawGrid(Coin coin, Snake snek, Obstacle obstacle, GraphicsContext gc, boolean a, int b) {
-        gc.setFill(game.getColor());
-        gc.fillRect(0, 0, gridCanvas.getWidth(), gridCanvas.getHeight());
-
-        gc.drawImage(coinImages.get(coin.getType()), (coin.getPos().x * game.getMultiplier()) * fullScale, (coin.getPos().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale - 3 * fullScale, game.getMultiplier() * fullScale - 3 * fullScale);
-
-        int bodyIndex = 0;
-        for (Point point : snek.getBody()) {
-            drawBody(snek, point, bodyIndex);
-            bodyIndex++;
-        }
-
-        drawHead(snek);
-
+    /** Redraws the current game state, including any obstacles. */
+    public void drawGrid(Coin coin, Snake snek, Obstacle obstacle) {
+        drawBoardContents(coin, snek);
         gc.setFill(obstacle.getColor());
         for (Point point : obstacle.getObstacles()) {
             gc.fillRect(point.x * game.getMultiplier() * fullScale, point.y * game.getMultiplier() * fullScale, game.getMultiplier() * fullScale, game.getMultiplier() * fullScale);
         }
     }
 
-    private void drawGrid(Coin coin, Snake snek, GraphicsContext gc) {
+    private void drawBoardContents(Coin coin, Snake snek) {
         gc.setFill(game.getColor());
         gc.fillRect(0, 0, gridCanvas.getWidth(), gridCanvas.getHeight());
 

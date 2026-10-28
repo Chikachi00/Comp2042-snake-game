@@ -41,7 +41,7 @@ public class GameController {
             animation.setRate(session.getSpeed());
         }
         if (result == GameSession.StepResult.WON) {
-            gameView.drawGrid(session.getCoin(), snake, session.getObstacle(), gameView.gc, false, 0);
+            gameView.drawGrid(session.getCoin(), snake, session.getObstacle());
             gameView.gameWon();
             gameView.updateScoreLabel();
             stopAnimation();
@@ -50,7 +50,7 @@ public class GameController {
 
         keyPressed = false;
         if (!snake.getDead() || snake.hitSelf()) {
-            gameView.drawGrid(session.getCoin(), snake, session.getObstacle(), gameView.gc, false, 0);
+            gameView.drawGrid(session.getCoin(), snake, session.getObstacle());
         }
         gameView.gameWon();
         gameView.gameOver(snake);
@@ -94,16 +94,10 @@ public class GameController {
 
         if (event.getCode().equals(KeyCode.PLUS)) {
             gameView.scaleToFullscreen(true, stage, session.getObstacle(), session.getSnake(), session.getCoin());
-            gameView.gameOverLabel.setStyle("-fx-font-size: 50;");
-            gameView.gameWonLabel.setStyle("-fx-font-size: 50;");
-            gameView.scoreLabel.setStyle("-fx-font-size: 35;");
         }
 
         if (event.getCode().equals(KeyCode.MINUS)) {
             gameView.scaleToFullscreen(false, stage, session.getObstacle(), session.getSnake(), session.getCoin());
-            gameView.gameOverLabel.setStyle("-fx-font-size: 15;");
-            gameView.gameWonLabel.setStyle("-fx-font-size: 15;");
-            gameView.scoreLabel.setStyle("-fx-font-size: 15;");
         }
 
         if (event.getCode().equals(KeyCode.ESCAPE)) {
@@ -143,6 +137,6 @@ public class GameController {
         gameView.gameWon();
         gameView.gameOver(session.getSnake());
         gameView.updateScoreLabel();
-        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle(), gameView.gc, false, 0);
+        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
     }
 }
