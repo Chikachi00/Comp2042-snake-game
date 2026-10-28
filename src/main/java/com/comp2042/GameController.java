@@ -10,10 +10,8 @@ import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.awt.Point;
 import java.io.File;
 import java.util.Optional;
-import java.util.Random;
 
 public class GameController {
     private Snake snek;
@@ -27,6 +25,8 @@ public class GameController {
     private KeyCode key = KeyCode.LEFT;
     private KeyCode lastKey = KeyCode.LEFT;
     private boolean keyPressed = false;
+    private final CoinFactory coinFactory = new CoinFactory();
+    private final CoinEffectService coinEffects = new CoinEffectService();
 
     private int legacyScoreMultiplier = 2;
 
@@ -66,7 +66,7 @@ public class GameController {
             }
 
             if (!snek.getDead() && snek.ateCoin(coin)) {
-                powerCoin();
+                applyCoinEffect();
                 game.incScore();
                 if (!game.gameWon() && !newCoin()) {
                     game.markBoardFull();
@@ -97,6 +97,10 @@ public class GameController {
 
     private void stopAnimation() {
         animation.stop();
+    }
+
+    private void applyCoinEffect() {
+        animation.setRate(coinEffects.apply(coin, game, snek, obstacle));
     }
 
     public void handle(KeyEvent event) {
@@ -180,67 +184,12 @@ public class GameController {
         gameView.drawGrid(coin, snek, obstacle, gameView.gc, false, 0);
     }
 
-    private void powerCoin() {
-        animation.setRate(game.getSpeed());
-        snek.ignoreBorders(false);
-        if (coin.getClass().equals(RainbowCoin.class)) {
-            RainbowCoin tempCoin = (RainbowCoin) coin;
-            animation.setRate(game.getSpeed() + tempCoin.getSpeedBonus());
-        } else if (coin.getClass().equals(SilverCoin.class)){
-            Random rnd = new Random();
-            int previousObstacleCount = obstacle.getObstacles().size();
-            obstacle.newObstacles(snek, coin, rnd.nextInt(game.getWidth() * game.getHeight()/ 20) +3);
-            game.decMaxScore(obstacle.getObstacles().size() - previousObstacleCount);
-        } else if (coin.getClass().equals(BlueCoin.class)) {
-            snek.ignoreBorders(true);
-        }
-        game.addPoints(coin.getPoints());
-    }
-
-    /**
-     * Chooses a coin category without creating images or starting JavaFX.
-     *
-     * @param roll the random value from 0 to 11
-     * @param powerUpsEnabled whether special coins are enabled
-     * @param hasObstacles whether the board already contains obstacles
-     * @return the category of coin to create
-     */
-    static CoinType selectCoinType(int roll, boolean powerUpsEnabled, boolean hasObstacles) {
-        if (!powerUpsEnabled) {
-            return CoinType.NORMAL;
-        }
-        if (roll == 1) {
-            return CoinType.GOLD;
-        } else if (roll == 2) {
-            return CoinType.RAINBOW;
-        } else if (roll == 3) {
-            return CoinType.BLUE;
-        } else if (roll == 4 && !hasObstacles) {
-            return CoinType.SILVER;
-        } else {
-            return CoinType.NORMAL;
-        }
-    }
-
     private boolean newCoin() {
-        Random random = new Random();
-        Optional<Point> position = Coin.findFreePosition(game.getWidth(), game.getHeight(),
-                snek.getHead(), snek.getBody(), obstacle.getObstacles(), random);
-        if (position.isEmpty()) {
+        Optional<Coin> nextCoin = coinFactory.createCoin(game, snek, obstacle);
+        if (nextCoin.isEmpty()) {
             return false;
         }
-
-        Point nextPosition = position.get();
-        int roll = game.isPowerUp() ? random.nextInt(12) : 0;
-        CoinType coinType = selectCoinType(roll, game.isPowerUp(),
-                !obstacle.getObstacles().isEmpty());
-        coin = switch (coinType) {
-            case GOLD -> new GoldCoin(nextPosition);
-            case RAINBOW -> new RainbowCoin(nextPosition);
-            case BLUE -> new BlueCoin(nextPosition);
-            case SILVER -> new SilverCoin(nextPosition);
-            case NORMAL -> new Coin(nextPosition);
-        };
+        coin = nextCoin.get();
         return true;
     }
 }

@@ -1,6 +1,7 @@
 package com.comp2042;
 
 import java.awt.Point;
+import java.util.Random;
 
 public class RainbowCoin extends Coin {
     public RainbowCoin(int x, int y, Snake snek, Obstacle obstacle) {
@@ -19,6 +20,11 @@ public class RainbowCoin extends Coin {
     public double getSpeedBonus() {
         double speedBonus = 5;
         return speedBonus;
+    }
+
+    @Override
+    double applyEffect(Game game, Snake snake, Obstacle obstacle, Random random) {
+        return game.getSpeed() + getSpeedBonus();
     }
 
     @Override

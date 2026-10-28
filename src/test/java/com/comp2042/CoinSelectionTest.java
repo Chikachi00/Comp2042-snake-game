@@ -31,9 +31,9 @@ class CoinSelectionTest {
                                         CoinType expectedWithObstacles) {
         assertAll(
                 () -> assertEquals(expectedClearBoard,
-                        GameController.selectCoinType(roll, true, false)),
+                        CoinFactory.selectCoinType(roll, true, false)),
                 () -> assertEquals(expectedWithObstacles,
-                        GameController.selectCoinType(roll, true, true))
+                        CoinFactory.selectCoinType(roll, true, true))
         );
     }
 
@@ -42,9 +42,9 @@ class CoinSelectionTest {
     void selectsNormalCoinsWhenPowerUpsAreDisabled(int roll) {
         assertAll(
                 () -> assertEquals(CoinType.NORMAL,
-                        GameController.selectCoinType(roll, false, false)),
+                        CoinFactory.selectCoinType(roll, false, false)),
                 () -> assertEquals(CoinType.NORMAL,
-                        GameController.selectCoinType(roll, false, true))
+                        CoinFactory.selectCoinType(roll, false, true))
         );
     }
 }

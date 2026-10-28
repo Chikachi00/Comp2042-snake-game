@@ -57,6 +57,14 @@ public class Coin {
     }
 
     /**
+     * Applies this coin's special effect and returns the resulting game speed.
+     * Ordinary and gold coins leave the base speed unchanged.
+     */
+    double applyEffect(Game game, Snake snake, Obstacle obstacle, Random random) {
+        return game.getSpeed();
+    }
+
+    /**
      * Identifies the coin's game category for selection and display.
      *
      * @return the category of this coin
