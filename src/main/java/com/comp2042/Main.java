@@ -19,12 +19,4 @@ public final class Main {
         Application.launch(SnakeApplication.class, args);
     }
 
-    /**
-     * Returns the window manager used by the running application.
-     *
-     * @return the window manager, or {@code null} before application startup
-     */
-    public static ViewManager getViewManager() {
-        return SnakeApplication.getViewManager();
-    }
 }

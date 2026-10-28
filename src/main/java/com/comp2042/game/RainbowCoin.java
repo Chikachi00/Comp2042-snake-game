@@ -1,12 +1,9 @@
-package com.comp2042;
-
-import javafx.scene.image.Image;
+package com.comp2042.game;
 
 import java.awt.Point;
+import java.util.Random;
 
 public class RainbowCoin extends Coin {
-    private Image image = new Image("resources/views/res/rainbowcoin.png");
-
     public RainbowCoin(int x, int y, Snake snek, Obstacle obstacle) {
         super(x, y, snek, obstacle);
     }
@@ -25,7 +22,13 @@ public class RainbowCoin extends Coin {
         return speedBonus;
     }
 
-    public Image getImage() {
-        return image;
+    @Override
+    double applyEffect(Game game, Snake snake, Obstacle obstacle, Random random) {
+        return game.getSpeed() + getSpeedBonus();
+    }
+
+    @Override
+    public CoinType getType() {
+        return CoinType.RAINBOW;
     }
 }

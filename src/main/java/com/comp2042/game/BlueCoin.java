@@ -1,12 +1,9 @@
-package com.comp2042;
-
-import javafx.scene.image.Image;
+package com.comp2042.game;
 
 import java.awt.Point;
+import java.util.Random;
 
 public class BlueCoin extends Coin {
-    private Image image = new Image("resources/views/res/bluecoin.png");
-
     public BlueCoin(int x, int y, Snake snek, Obstacle obstacle) {
         super(x, y, snek, obstacle);
     }
@@ -20,7 +17,14 @@ public class BlueCoin extends Coin {
         return points;
     }
 
-    public Image getImage() {
-        return image;
+    @Override
+    double applyEffect(Game game, Snake snake, Obstacle obstacle, Random random) {
+        snake.ignoreBorders(true);
+        return game.getSpeed();
+    }
+
+    @Override
+    public CoinType getType() {
+        return CoinType.BLUE;
     }
 }

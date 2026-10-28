@@ -1,4 +1,4 @@
-package com.comp2042;
+package com.comp2042.game;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -27,13 +27,13 @@ class CoinSelectionTest {
             "10, NORMAL, NORMAL",
             "11, NORMAL, NORMAL"
     })
-    void selectsExpectedCoinForEveryRoll(int roll, GameController.CoinType expectedClearBoard,
-                                        GameController.CoinType expectedWithObstacles) {
+    void selectsExpectedCoinForEveryRoll(int roll, CoinType expectedClearBoard,
+                                        CoinType expectedWithObstacles) {
         assertAll(
                 () -> assertEquals(expectedClearBoard,
-                        GameController.selectCoinType(roll, true, false)),
+                        CoinFactory.selectCoinType(roll, true, false)),
                 () -> assertEquals(expectedWithObstacles,
-                        GameController.selectCoinType(roll, true, true))
+                        CoinFactory.selectCoinType(roll, true, true))
         );
     }
 
@@ -41,10 +41,10 @@ class CoinSelectionTest {
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11})
     void selectsNormalCoinsWhenPowerUpsAreDisabled(int roll) {
         assertAll(
-                () -> assertEquals(GameController.CoinType.NORMAL,
-                        GameController.selectCoinType(roll, false, false)),
-                () -> assertEquals(GameController.CoinType.NORMAL,
-                        GameController.selectCoinType(roll, false, true))
+                () -> assertEquals(CoinType.NORMAL,
+                        CoinFactory.selectCoinType(roll, false, false)),
+                () -> assertEquals(CoinType.NORMAL,
+                        CoinFactory.selectCoinType(roll, false, true))
         );
     }
 }
