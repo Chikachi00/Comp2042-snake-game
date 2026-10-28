@@ -1,4 +1,4 @@
-package com.comp2042;
+package com.comp2042.game;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

@@ -1,4 +1,11 @@
-package com.comp2042;
+package com.comp2042.ui;
+
+import com.comp2042.game.Coin;
+import com.comp2042.game.Direction;
+import com.comp2042.game.Game;
+import com.comp2042.game.GameSession;
+import com.comp2042.game.Obstacle;
+import com.comp2042.game.Snake;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -12,14 +19,17 @@ public class GameController {
     private final GameSession session;
     private final GameView gameView;
     private final Stage stage;
+    private final Runnable returnToMenu;
 
     private Direction direction = Direction.LEFT;
     private boolean keyPressed = false;
 
-    public GameController(Snake snek, Coin coin, Game game, GameView gameView, Obstacle obstacle, Stage stage) {
+    public GameController(Snake snek, Coin coin, Game game, GameView gameView,
+                          Obstacle obstacle, Stage stage, Runnable returnToMenu) {
         this.session = new GameSession(game, snek, coin, obstacle);
         this.gameView = gameView;
         this.stage = stage;
+        this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
         this.stage.setOnHidden(event -> animation.stop());
         animation.setCycleCount(Animation.INDEFINITE);
         animation.setRate(session.getSpeed());
@@ -102,9 +112,7 @@ public class GameController {
 
         if (event.getCode().equals(KeyCode.ESCAPE)) {
             animation.stop();
-            MainMenuController mainMenuController = new MainMenuController();
-            mainMenuController.getViewManager().getPrimaryStage().show();
-            mainMenuController.getViewManager().getGameStage().close();
+            returnToMenu.run();
         }
     }
 

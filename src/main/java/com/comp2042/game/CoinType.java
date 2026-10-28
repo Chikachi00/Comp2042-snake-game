@@ -1,4 +1,4 @@
-package com.comp2042;
+package com.comp2042.game;
 
 /** Identifies the categories of coins used by the game. */
 public enum CoinType {

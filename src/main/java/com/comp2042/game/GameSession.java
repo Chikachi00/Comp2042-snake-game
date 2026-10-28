@@ -1,10 +1,10 @@
-package com.comp2042;
+package com.comp2042.game;
 
 import java.util.Optional;
 
 /** Maintains the rules and state of a single game, independently of the UI timer. */
-final class GameSession {
-    enum StepResult { MOVED, COIN_EATEN, WON, DIED, ALREADY_ENDED }
+public final class GameSession {
+    public enum StepResult { MOVED, COIN_EATEN, WON, DIED, ALREADY_ENDED }
 
     private final Game game;
     private final Obstacle obstacle;
@@ -14,7 +14,7 @@ final class GameSession {
     private Coin coin;
     private double speed;
 
-    GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle) {
+    public GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle) {
         this(game, snake, coin, obstacle, new CoinFactory(), new CoinEffectService());
     }
 
@@ -30,7 +30,7 @@ final class GameSession {
     }
 
     /** Advances one movement and applies any resulting coin, collision or win rules. */
-    StepResult advance(Direction direction) {
+    public StepResult advance(Direction direction) {
         if (isOver()) {
             return StepResult.ALREADY_ENDED;
         }
@@ -56,7 +56,7 @@ final class GameSession {
     }
 
     /** Starts a new round using the existing game settings. */
-    void reset() {
+    public void reset() {
         obstacle.reset();
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
         coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
@@ -64,9 +64,9 @@ final class GameSession {
         game.resetScore();
     }
 
-    boolean isOver() { return snake.getDead() || game.gameWon(); }
-    Snake getSnake() { return snake; }
-    Coin getCoin() { return coin; }
-    Obstacle getObstacle() { return obstacle; }
-    double getSpeed() { return speed; }
+    public boolean isOver() { return snake.getDead() || game.gameWon(); }
+    public Snake getSnake() { return snake; }
+    public Coin getCoin() { return coin; }
+    public Obstacle getObstacle() { return obstacle; }
+    public double getSpeed() { return speed; }
 }

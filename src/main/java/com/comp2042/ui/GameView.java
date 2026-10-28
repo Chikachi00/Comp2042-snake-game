@@ -1,4 +1,11 @@
-package com.comp2042;
+package com.comp2042.ui;
+
+import com.comp2042.game.Coin;
+import com.comp2042.game.CoinType;
+import com.comp2042.game.Direction;
+import com.comp2042.game.Game;
+import com.comp2042.game.Obstacle;
+import com.comp2042.game.Snake;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -47,10 +54,11 @@ public class GameView {
     private double initY;
     private double fullScale = 1;
     private boolean fullsize = false;
-    private int[][] turnArray = new int[MainMenuController.getxValue()][MainMenuController.getyValue()];
+    private final int[][] turnArray;
 
     public GameView(Game game) {
         this.game = game;
+        this.turnArray = new int[game.getWidth()][game.getHeight()];
     }
 
     public void makeScene(Scene scene, Snake snek, Coin coin) {

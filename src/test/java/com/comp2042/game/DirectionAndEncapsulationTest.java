@@ -1,20 +1,11 @@
-package com.comp2042;
+package com.comp2042.game;
 
-import javafx.scene.input.KeyCode;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import java.awt.Point;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DirectionAndEncapsulationTest {
-    @ParameterizedTest
-    @CsvSource({"LEFT, LEFT", "RIGHT, RIGHT", "UP, UP", "DOWN, DOWN"})
-    void arrowKeysMapToTheSameMovementDirection(KeyCode key, Direction direction) {
-        assertEquals(direction, GameController.directionForKey(key));
-    }
-
     @Test
     void modifyingTheReturnedSnakePointsCannotMoveTheSnake() {
         Obstacle obstacles = new Obstacle(5, 5);

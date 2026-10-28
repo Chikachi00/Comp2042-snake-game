@@ -1,4 +1,4 @@
-package com.comp2042;
+package com.comp2042.game;
 
 import java.awt.Point;
 

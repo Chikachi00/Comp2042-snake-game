@@ -1,4 +1,6 @@
-package com.comp2042;
+package com.comp2042.ui;
+
+import com.comp2042.game.Direction;
 
 import javafx.scene.input.KeyCode;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,6 +38,12 @@ class GameControllerTest {
                                   boolean expectedAllowed) {
         assertEquals(expectedAllowed,
                 !currentDirection.isOpposite(requestedDirection));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"LEFT, LEFT", "RIGHT, RIGHT", "UP, UP", "DOWN, DOWN"})
+    void arrowKeysMapToTheSameMovementDirection(KeyCode key, Direction direction) {
+        assertEquals(direction, GameController.directionForKey(key));
     }
 
     @ParameterizedTest(name = "{0} is not a movement direction")

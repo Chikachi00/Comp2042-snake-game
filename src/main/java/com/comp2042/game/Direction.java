@@ -1,4 +1,4 @@
-package com.comp2042;
+package com.comp2042.game;
 
 /** The four directions in which the snake can move on the board. */
 public enum Direction {
@@ -15,7 +15,7 @@ public enum Direction {
     int dx() { return dx; }
     int dy() { return dy; }
 
-    boolean isOpposite(Direction other) {
+    public boolean isOpposite(Direction other) {
         return other != null && dx == -other.dx && dy == -other.dy;
     }
 }
