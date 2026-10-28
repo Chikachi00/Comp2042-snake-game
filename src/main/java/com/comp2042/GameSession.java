@@ -30,7 +30,7 @@ final class GameSession {
     }
 
     /** Advances one movement and applies any resulting coin, collision or win rules. */
-    StepResult advance(char direction) {
+    StepResult advance(Direction direction) {
         if (isOver()) {
             return StepResult.ALREADY_ENDED;
         }

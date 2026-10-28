@@ -44,7 +44,7 @@ class CoinFactoryTest {
         Game game = new Game(20, 20, true, 'N');
         Obstacle obstacle = new Obstacle(20, 20);
         Snake snake = new Snake(20, 20, false, obstacle);
-        obstacle.getObstacles().add(new Point(0, 0));
+        ObstacleFixtures.place(obstacle, 20, 20, new Point(0, 0));
         CoinFactory factory = new CoinFactory(new SequenceRandom(0, 4));
 
         Coin coin = factory.createCoin(game, snake, obstacle).orElseThrow();
@@ -58,14 +58,8 @@ class CoinFactoryTest {
         Game game = new Game(3, 3, true, 'N');
         Obstacle obstacle = new Obstacle(3, 3);
         Snake snake = new Snake(3, 3, false, obstacle);
-        for (int x = 0; x < 3; x++) {
-            for (int y = 0; y < 3; y++) {
-                Point point = new Point(x, y);
-                if (!point.equals(snake.getHead()) && !snake.getBody().contains(point)) {
-                    obstacle.getObstacles().add(point);
-                }
-            }
-        }
+        ObstacleFixtures.place(obstacle, 3, 3, new Point(0, 0), new Point(0, 1),
+                new Point(0, 2), new Point(1, 0), new Point(1, 2), new Point(2, 0), new Point(2, 2));
         CoinFactory factory = new CoinFactory(new SequenceRandom());
 
         Optional<Coin> result = factory.createCoin(game, snake, obstacle);

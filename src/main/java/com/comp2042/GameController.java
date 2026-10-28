@@ -13,8 +13,7 @@ public class GameController {
     private final GameView gameView;
     private final Stage stage;
 
-    private KeyCode key = KeyCode.LEFT;
-    private KeyCode lastKey = KeyCode.LEFT;
+    private Direction direction = Direction.LEFT;
     private boolean keyPressed = false;
 
     public GameController(Snake snek, Coin coin, Game game, GameView gameView, Obstacle obstacle, Stage stage) {
@@ -29,7 +28,7 @@ public class GameController {
     private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> advanceGame()));
 
     private void advanceGame() {
-        GameSession.StepResult result = session.advance(toMovement(key));
+        GameSession.StepResult result = session.advance(direction);
         Snake snake = session.getSnake();
 
         if (result == GameSession.StepResult.ALREADY_ENDED) {
@@ -60,13 +59,13 @@ public class GameController {
         }
     }
 
-    private static char toMovement(KeyCode direction) {
-        return switch (direction) {
-            case LEFT -> 'L';
-            case RIGHT -> 'R';
-            case UP -> 'U';
-            case DOWN -> 'D';
-            default -> throw new IllegalArgumentException("Not a movement direction: " + direction);
+    static Direction directionForKey(KeyCode key) {
+        return switch (key) {
+            case LEFT -> Direction.LEFT;
+            case RIGHT -> Direction.RIGHT;
+            case UP -> Direction.UP;
+            case DOWN -> Direction.DOWN;
+            default -> null;
         };
     }
 
@@ -77,11 +76,12 @@ public class GameController {
     public void handle(KeyEvent event) {
         if (event.getCode().isArrowKey() && !session.isOver()) animation.play();
 
-        if (!session.isOver() && isDirectionAllowed(key, event.getCode()) && !keyPressed) {
-            lastKey = key;
-            key = event.getCode();
+        Direction requested = directionForKey(event.getCode());
+        if (!session.isOver() && requested != null && !direction.isOpposite(requested) && !keyPressed) {
+            Direction previous = direction;
+            direction = requested;
             keyPressed = true;
-            gameView.turnDir(session.getSnake(), lastKey, key);
+            gameView.turnDir(session.getSnake(), previous, direction);
         }
 
         if (event.getCode().equals(KeyCode.P)) {
@@ -108,30 +108,12 @@ public class GameController {
         }
     }
 
-    /**
-     * Allows continuing forward or turning, but rejects reversing and non-arrow keys.
-     *
-     * @param currentDirection the snake's current movement direction
-     * @param requestedDirection the key requested by the player
-     * @return whether the requested direction is a legal movement direction
-     */
-    static boolean isDirectionAllowed(KeyCode currentDirection, KeyCode requestedDirection) {
-        return switch (requestedDirection) {
-            case LEFT -> currentDirection != KeyCode.RIGHT;
-            case RIGHT -> currentDirection != KeyCode.LEFT;
-            case UP -> currentDirection != KeyCode.DOWN;
-            case DOWN -> currentDirection != KeyCode.UP;
-            default -> false;
-        };
-    }
-
     private void reset() {
         animation.jumpTo(Duration.ZERO);
         animation.stop();
         session.reset();
         animation.setRate(session.getSpeed());
-        key = KeyCode.LEFT;
-        lastKey = KeyCode.LEFT;
+        direction = Direction.LEFT;
         keyPressed = false;
 
         gameView.gameWon();

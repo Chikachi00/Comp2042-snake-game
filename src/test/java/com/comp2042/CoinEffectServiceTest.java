@@ -47,14 +47,14 @@ class CoinEffectServiceTest {
 
         assertEquals(game.getSpeed(), effects.apply(new BlueCoin(new Point(0, 0)), game, snake, obstacle));
         for (int i = 0; i < 3; i++) {
-            snake.move('L');
+            snake.move(Direction.LEFT);
             assertFalse(snake.getDead());
             assertFalse(snake.ateCoin(NO_COIN));
         }
         assertEquals(new Point(4, 2), snake.getHead());
 
         effects.apply(new Coin(new Point(0, 0)), game, snake, obstacle);
-        snake.move('R');
+        snake.move(Direction.RIGHT);
 
         assertTrue(snake.getDead());
         assertEquals(10, game.getScorePoints());

@@ -87,8 +87,13 @@ public class Obstacle {
         return color;
     }
 
-    public ArrayList<Point> getObstacles() {
-        return obstacles;
+    /** Returns a snapshot whose coordinates cannot change the board. */
+    public List<Point> getObstacles() {
+        return obstacles.stream().map(Point::new).toList();
+    }
+
+    boolean occupies(Point position) {
+        return obstacles.contains(position);
     }
 
     public void reset() {

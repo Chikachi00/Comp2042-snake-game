@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Checks the snake's legal direction changes without starting a JavaFX window.
@@ -32,16 +32,16 @@ class GameControllerTest {
             "RIGHT, LEFT, false",
             "RIGHT, RIGHT, true"
     })
-    void validatesDirectionChanges(KeyCode currentDirection, KeyCode requestedDirection,
+    void validatesDirectionChanges(Direction currentDirection, Direction requestedDirection,
                                   boolean expectedAllowed) {
         assertEquals(expectedAllowed,
-                GameController.isDirectionAllowed(currentDirection, requestedDirection));
+                !currentDirection.isOpposite(requestedDirection));
     }
 
     @ParameterizedTest(name = "{0} is not a movement direction")
     @EnumSource(value = KeyCode.class,
             names = {"P", "TAB", "ESCAPE", "PLUS", "MINUS", "SPACE", "A"})
     void rejectsNonArrowKeys(KeyCode requestedDirection) {
-        assertFalse(GameController.isDirectionAllowed(KeyCode.LEFT, requestedDirection));
+        assertNull(GameController.directionForKey(requestedDirection));
     }
 }

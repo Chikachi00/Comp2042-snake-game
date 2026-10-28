@@ -18,7 +18,7 @@ class GameSessionTest {
         Snake snake = new Snake(20, 20, false, obstacle);
         GameSession session = session(game, snake, new Coin(new Point(0, 0)), obstacle);
 
-        assertEquals(GameSession.StepResult.MOVED, session.advance('L'));
+        assertEquals(GameSession.StepResult.MOVED, session.advance(Direction.LEFT));
         assertEquals(new Point(9, 10), snake.getHead());
         assertEquals(1, snake.getBody().size());
         assertEquals(0, game.getScorePoints());
@@ -32,7 +32,7 @@ class GameSessionTest {
         Snake snake = new Snake(20, 20, false, obstacle);
         GameSession session = session(game, snake, new GoldCoin(new Point(9, 10)), obstacle);
 
-        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance('L'));
+        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance(Direction.LEFT));
         assertEquals(15, game.getScorePoints());
         assertEquals(2, snake.getBody().size());
         assertFalse(snake.getHead().equals(session.getCoin().getPos()));
@@ -52,12 +52,12 @@ class GameSessionTest {
         GameSession session = new GameSession(game, snake, new RainbowCoin(new Point(9, 10)), obstacle,
                 factory, new CoinEffectService(new Random(1)));
 
-        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance('L'));
+        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance(Direction.LEFT));
         assertEquals(13.5, session.getSpeed());
         assertEquals(new Point(0, 0), session.getCoin().getPos());
-        for (int i = 0; i < 9; i++) session.advance('L');
-        for (int i = 0; i < 9; i++) session.advance('U');
-        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance('U'));
+        for (int i = 0; i < 9; i++) session.advance(Direction.LEFT);
+        for (int i = 0; i < 9; i++) session.advance(Direction.UP);
+        assertEquals(GameSession.StepResult.COIN_EATEN, session.advance(Direction.UP));
         assertEquals(8.5, session.getSpeed());
         assertEquals(10, game.getScorePoints());
     }
@@ -66,14 +66,14 @@ class GameSessionTest {
     void collisionEndsTheRoundAndLaterStepsDoNothing() {
         Game game = new Game(5, 5, true, 'N');
         Obstacle obstacle = new Obstacle(5, 5);
-        obstacle.getObstacles().add(new Point(1, 2));
+        ObstacleFixtures.place(obstacle, 5, 5, new Point(1, 2));
         Snake snake = new Snake(5, 5, false, obstacle);
         GameSession session = session(game, snake, new Coin(new Point(0, 0)), obstacle);
 
-        assertEquals(GameSession.StepResult.DIED, session.advance('L'));
+        assertEquals(GameSession.StepResult.DIED, session.advance(Direction.LEFT));
         assertTrue(session.isOver());
         assertEquals(new Point(2, 2), snake.getHead());
-        assertEquals(GameSession.StepResult.ALREADY_ENDED, session.advance('U'));
+        assertEquals(GameSession.StepResult.ALREADY_ENDED, session.advance(Direction.UP));
         assertEquals(new Point(2, 2), snake.getHead());
         assertEquals(0, game.getScorePoints());
     }
@@ -84,15 +84,13 @@ class GameSessionTest {
         Obstacle obstacle = new Obstacle(3, 3);
         Snake snake = new Snake(3, 3, false, obstacle);
         GameSession session = session(game, snake, new Coin(new Point(0, 1)), obstacle);
-        for (int x = 0; x < 3; x++) {
-            obstacle.getObstacles().add(new Point(x, 0));
-            obstacle.getObstacles().add(new Point(x, 2));
-        }
+        ObstacleFixtures.place(obstacle, 3, 3, new Point(0, 0), new Point(1, 0),
+                new Point(2, 0), new Point(0, 2), new Point(1, 2), new Point(2, 2));
 
-        assertEquals(GameSession.StepResult.WON, session.advance('L'));
+        assertEquals(GameSession.StepResult.WON, session.advance(Direction.LEFT));
         assertTrue(game.gameWon());
         assertEquals(5, game.getScorePoints());
-        assertEquals(GameSession.StepResult.ALREADY_ENDED, session.advance('L'));
+        assertEquals(GameSession.StepResult.ALREADY_ENDED, session.advance(Direction.LEFT));
         session.reset();
         assertFalse(game.gameWon());
         assertFalse(session.isOver());
@@ -113,7 +111,7 @@ class GameSessionTest {
         GameSession session = session(game, snake, lastCoin, obstacle);
         for (int i = 0; i < 6; i++) game.incScore();
 
-        assertEquals(GameSession.StepResult.WON, session.advance('L'));
+        assertEquals(GameSession.StepResult.WON, session.advance(Direction.LEFT));
         assertTrue(session.isOver());
         assertSame(lastCoin, session.getCoin());
         assertEquals(15, game.getScorePoints());

@@ -20,19 +20,19 @@ class SnakeTest {
 
         assertEquals(new Point(2, 2), snake.getHead());
         assertEquals(List.of(new Point(3, 2)), snake.getBody());
-        assertEquals(270, snake.getSnakeDir());
+        assertEquals(Direction.LEFT, snake.getDirection());
         assertFalse(snake.getDead());
     }
 
     @ParameterizedTest
-    @CsvSource({"L, 1, 2, 270", "R, 3, 2, 90", "U, 2, 1, 0", "D, 2, 3, 180"})
-    void movesOneCellInEachDirection(char direction, int x, int y, int rotation) {
+    @CsvSource({"LEFT, 1, 2", "RIGHT, 3, 2", "UP, 2, 1", "DOWN, 2, 3"})
+    void movesOneCellInEachDirection(Direction direction, int x, int y) {
         Snake snake = createSnake(false, new Obstacle(5, 5));
 
         snake.move(direction);
 
         assertEquals(new Point(x, y), snake.getHead());
-        assertEquals(rotation, snake.getSnakeDir());
+        assertEquals(direction, snake.getDirection());
         assertFalse(snake.getDead());
     }
 
@@ -40,7 +40,7 @@ class SnakeTest {
     void advancesTheTailWhenNoCoinIsEaten() {
         Snake snake = createSnake(false, new Obstacle(5, 5));
 
-        snake.move('L');
+        snake.move(Direction.LEFT);
 
         assertFalse(snake.ateCoin(NO_COIN));
         assertEquals(List.of(new Point(2, 2)), snake.getBody());
@@ -50,15 +50,15 @@ class SnakeTest {
     void growsWhenTheHeadReachesACoin() {
         Snake snake = createSnake(false, new Obstacle(5, 5));
 
-        snake.move('L');
+        snake.move(Direction.LEFT);
 
         assertTrue(snake.ateCoin(new Point(1, 2)));
         assertEquals(List.of(new Point(3, 2), new Point(2, 2)), snake.getBody());
     }
 
     @ParameterizedTest
-    @CsvSource({"L, 0, 2", "R, 4, 2", "U, 2, 0", "D, 2, 4"})
-    void stopsAtTheWallWhenBordersAreEnabled(char direction, int edgeX, int edgeY) {
+    @CsvSource({"LEFT, 0, 2", "RIGHT, 4, 2", "UP, 2, 0", "DOWN, 2, 4"})
+    void stopsAtTheWallWhenBordersAreEnabled(Direction direction, int edgeX, int edgeY) {
         Snake snake = createSnake(false, new Obstacle(5, 5));
         moveToEdge(snake, direction);
 
@@ -70,10 +70,10 @@ class SnakeTest {
 
     @ParameterizedTest
     @CsvSource({
-            "L, 4, 2, false", "R, 0, 2, false", "U, 2, 4, false", "D, 2, 0, false",
-            "L, 4, 2, true", "R, 0, 2, true", "U, 2, 4, true", "D, 2, 0, true"
+            "LEFT, 4, 2, false", "RIGHT, 0, 2, false", "UP, 2, 4, false", "DOWN, 2, 0, false",
+            "LEFT, 4, 2, true", "RIGHT, 0, 2, true", "UP, 2, 4, true", "DOWN, 2, 0, true"
     })
-    void wrapsAcrossEveryEdgeWhenAllowed(char direction, int targetX, int targetY,
+    void wrapsAcrossEveryEdgeWhenAllowed(Direction direction, int targetX, int targetY,
                                          boolean temporaryPowerUp) {
         Snake snake = createSnake(!temporaryPowerUp, new Obstacle(5, 5));
         snake.ignoreBorders(temporaryPowerUp);
@@ -87,16 +87,16 @@ class SnakeTest {
 
     @ParameterizedTest
     @CsvSource({
-            "L, 0, 2, 4, 2, false", "R, 4, 2, 0, 2, false",
-            "U, 2, 0, 2, 4, false", "D, 2, 4, 2, 0, false",
-            "L, 0, 2, 4, 2, true", "R, 4, 2, 0, 2, true",
-            "U, 2, 0, 2, 4, true", "D, 2, 4, 2, 0, true"
+            "LEFT, 0, 2, 4, 2, false", "RIGHT, 4, 2, 0, 2, false",
+            "UP, 2, 0, 2, 4, false", "DOWN, 2, 4, 2, 0, false",
+            "LEFT, 0, 2, 4, 2, true", "RIGHT, 4, 2, 0, 2, true",
+            "UP, 2, 0, 2, 4, true", "DOWN, 2, 4, 2, 0, true"
     })
-    void detectsAnObstacleAtTheWrappedDestination(char direction, int edgeX, int edgeY,
+    void detectsAnObstacleAtTheWrappedDestination(Direction direction, int edgeX, int edgeY,
                                                    int targetX, int targetY,
                                                    boolean temporaryPowerUp) {
         Obstacle obstacle = new Obstacle(5, 5);
-        obstacle.getObstacles().add(new Point(targetX, targetY));
+        ObstacleFixtures.place(obstacle, 5, 5, new Point(targetX, targetY));
         Snake snake = createSnake(!temporaryPowerUp, obstacle);
         snake.ignoreBorders(temporaryPowerUp);
         moveToEdge(snake, direction);
@@ -110,10 +110,10 @@ class SnakeTest {
     @Test
     void detectsAnObstacleWithoutWrapping() {
         Obstacle obstacle = new Obstacle(5, 5);
-        obstacle.getObstacles().add(new Point(1, 2));
+        ObstacleFixtures.place(obstacle, 5, 5, new Point(1, 2));
         Snake snake = createSnake(false, obstacle);
 
-        snake.move('L');
+        snake.move(Direction.LEFT);
 
         assertTrue(snake.getDead());
         assertEquals(new Point(2, 2), snake.getHead());
@@ -122,12 +122,12 @@ class SnakeTest {
     @Test
     void detectsCollisionWithItsOwnBody() {
         Snake snake = new Snake(10, 10, false, new Obstacle(10, 10));
-        for (char direction : new char[]{'L', 'U', 'R'}) {
+        for (Direction direction : new Direction[]{Direction.LEFT, Direction.UP, Direction.RIGHT}) {
             snake.move(direction);
             assertTrue(snake.ateCoin(snake.getHead()));
         }
 
-        snake.move('D');
+        snake.move(Direction.DOWN);
 
         assertTrue(snake.getDead());
         assertTrue(snake.hitSelf());
@@ -137,7 +137,7 @@ class SnakeTest {
         return new Snake(5, 5, noBorder, obstacle);
     }
 
-    private void moveToEdge(Snake snake, char direction) {
+    private void moveToEdge(Snake snake, Direction direction) {
         for (int i = 0; i < 2; i++) {
             snake.move(direction);
             assertFalse(snake.getDead());
