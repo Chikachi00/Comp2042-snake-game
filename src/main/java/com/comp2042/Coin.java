@@ -1,7 +1,5 @@
 package com.comp2042;
 
-import javafx.scene.image.Image;
-
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +11,6 @@ import java.util.Set;
 
 public class Coin {
     private final Point pos;
-    private Image image = new Image("resources/views/res/redcoin.png");
 
     public Coin(int x, int y, Snake snek, Obstacle obstacle) {
         this(findFreePosition(x, y, snek.getHead(), snek.getBody(),
@@ -59,7 +56,12 @@ public class Coin {
         return points;
     }
 
-    public Image getImage() {
-        return image;
+    /**
+     * Identifies the coin's game category for selection and display.
+     *
+     * @return the category of this coin
+     */
+    public CoinType getType() {
+        return CoinType.NORMAL;
     }
 }

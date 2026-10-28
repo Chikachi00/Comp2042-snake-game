@@ -198,13 +198,6 @@ public class GameController {
     }
 
     /**
-     * Coin categories selected before creating their JavaFX-backed objects.
-     */
-    enum CoinType {
-        NORMAL, GOLD, RAINBOW, BLUE, SILVER
-    }
-
-    /**
      * Chooses a coin category without creating images or starting JavaFX.
      *
      * @param roll the random value from 0 to 11

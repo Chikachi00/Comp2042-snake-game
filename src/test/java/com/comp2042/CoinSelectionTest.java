@@ -27,8 +27,8 @@ class CoinSelectionTest {
             "10, NORMAL, NORMAL",
             "11, NORMAL, NORMAL"
     })
-    void selectsExpectedCoinForEveryRoll(int roll, GameController.CoinType expectedClearBoard,
-                                        GameController.CoinType expectedWithObstacles) {
+    void selectsExpectedCoinForEveryRoll(int roll, CoinType expectedClearBoard,
+                                        CoinType expectedWithObstacles) {
         assertAll(
                 () -> assertEquals(expectedClearBoard,
                         GameController.selectCoinType(roll, true, false)),
@@ -41,9 +41,9 @@ class CoinSelectionTest {
     @ValueSource(ints = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11})
     void selectsNormalCoinsWhenPowerUpsAreDisabled(int roll) {
         assertAll(
-                () -> assertEquals(GameController.CoinType.NORMAL,
+                () -> assertEquals(CoinType.NORMAL,
                         GameController.selectCoinType(roll, false, false)),
-                () -> assertEquals(GameController.CoinType.NORMAL,
+                () -> assertEquals(CoinType.NORMAL,
                         GameController.selectCoinType(roll, false, true))
         );
     }

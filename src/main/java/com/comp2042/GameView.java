@@ -14,8 +14,9 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.awt.*;
+import java.util.Map;
 
-/** Renders the game board and owns the snake's sprite images. */
+/** Renders the game board and owns its sprite images. */
 public class GameView {
 
     public Canvas gridCanvas;
@@ -30,6 +31,13 @@ public class GameView {
     private final ImageView imageBody = new ImageView(new Image("resources/views/res/snakebody.png"));
     private final ImageView imageTurn = new ImageView(new Image("resources/views/res/snaketurnleft.png"));
     private final ImageView imageTail = new ImageView(new Image("resources/views/res/snaketail.png"));
+    private final Map<CoinType, Image> coinImages = Map.of(
+            CoinType.NORMAL, new Image("resources/views/res/redcoin.png"),
+            CoinType.GOLD, new Image("resources/views/res/goldcoin.png"),
+            CoinType.RAINBOW, new Image("resources/views/res/rainbowcoin.png"),
+            CoinType.BLUE, new Image("resources/views/res/bluecoin.png"),
+            CoinType.SILVER, new Image("resources/views/res/silvercoin.png")
+    );
 
     private Game game;
     private double initX;
@@ -99,7 +107,7 @@ public class GameView {
         gc.setFill(game.getColor());
         gc.fillRect(0, 0, gridCanvas.getWidth(), gridCanvas.getHeight());
 
-        gc.drawImage(coin.getImage(), (coin.getPos().x * game.getMultiplier()) * fullScale, (coin.getPos().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale - 3 * fullScale, game.getMultiplier() * fullScale - 3 * fullScale);
+        gc.drawImage(coinImages.get(coin.getType()), (coin.getPos().x * game.getMultiplier()) * fullScale, (coin.getPos().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale - 3 * fullScale, game.getMultiplier() * fullScale - 3 * fullScale);
 
         int bodyIndex = 0;
         for (Point point : snek.getBody()) {
@@ -119,7 +127,7 @@ public class GameView {
         gc.setFill(game.getColor());
         gc.fillRect(0, 0, gridCanvas.getWidth(), gridCanvas.getHeight());
 
-        gc.drawImage(coin.getImage(), (coin.getPos().x * game.getMultiplier()) * fullScale, (coin.getPos().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale - 3 * fullScale, game.getMultiplier() * fullScale - 3 * fullScale);
+        gc.drawImage(coinImages.get(coin.getType()), (coin.getPos().x * game.getMultiplier()) * fullScale, (coin.getPos().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale - 3 * fullScale, game.getMultiplier() * fullScale - 3 * fullScale);
 
         int bodyIndex = 0;
         for (Point point : snek.getBody()) {

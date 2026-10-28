@@ -1,12 +1,8 @@
 package com.comp2042;
 
-import javafx.scene.image.Image;
-
 import java.awt.Point;
 
 public class RainbowCoin extends Coin {
-    private Image image = new Image("resources/views/res/rainbowcoin.png");
-
     public RainbowCoin(int x, int y, Snake snek, Obstacle obstacle) {
         super(x, y, snek, obstacle);
     }
@@ -25,7 +21,8 @@ public class RainbowCoin extends Coin {
         return speedBonus;
     }
 
-    public Image getImage() {
-        return image;
+    @Override
+    public CoinType getType() {
+        return CoinType.RAINBOW;
     }
 }
