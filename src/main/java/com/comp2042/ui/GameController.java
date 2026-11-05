@@ -51,6 +51,7 @@ public class GameController {
         }
         if (result == GameSession.StepResult.LEVEL_COMPLETED) {
             stopAnimation();
+            animation.setRate(session.getSpeed());
             flow.reset();
             direction = Direction.LEFT;
             keyPressed = false;
