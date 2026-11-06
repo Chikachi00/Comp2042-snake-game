@@ -19,10 +19,10 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
 
 ### Build and run
 
-1. Clone the repository and enter it:
+1. Clone the gameplay branch and enter the repository. These instructions use `feature/gameplay-enhancements` while its changes are awaiting merge into `main`:
 
    ```cmd
-   git clone https://github.com/Chikachi00/Comp2042-snake-game.git
+   git clone --branch feature/gameplay-enhancements https://github.com/Chikachi00/Comp2042-snake-game.git
    cd Comp2042-snake-game
    ```
 
@@ -58,13 +58,15 @@ On other platforms, use `./mvnw` instead of `mvnw.cmd` and the appropriate path 
 
 ### Browse or regenerate Javadoc
 
-Open [Javadoc/index.html](Javadoc/index.html). To regenerate the included documentation after changing source code, first run `mvnw.cmd compile`, then:
+The generated `Javadoc` folder is ignored by Git and is not included in a fresh clone. Generate it locally from the current source before preparing the final coursework submission:
 
 ```cmd
+mvnw.cmd compile
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\generate-javadoc.ps1
+start "" "Javadoc\index.html"
 ```
 
-The script reads the JavaFX version from the POM and uses dependencies in the local Maven cache. It includes package-visible implementation classes and private methods, and validates Javadoc markup. Documentation for a method includes its purpose, parameters and return value where applicable.
+The tracked [generation script](scripts/generate-javadoc.ps1) reads the JavaFX version from the POM and uses dependencies in the local Maven cache. It includes package-visible implementation classes and private methods, and validates Javadoc markup. Documentation for a method includes its purpose, parameters and return value where applicable. After generation, `Javadoc/index.html` is the local entry page; copy the whole `Javadoc` folder into the final submission. Generated HTML does not need to be committed to GitHub.
 
 ## 3. Implemented and Working Properly
 
@@ -76,11 +78,12 @@ The following behaviors are covered by the automated checks described below. Fin
 | Coin placement and effects | `game/CoinFactory.java` places coins in free cells. Ordinary, rainbow, blue and silver coins give 5 base points; gold gives 15. `game/CoinEffectService.java` replaces temporary effects before awarding points. |
 | Safe obstacle generation | `game/Obstacle.java` chooses unique free cells, avoids the snake and coin, respects board bounds and caps the total at 50. |
 | Pause and resume | `P` or `Esc` toggles the pause menu. Movement and the combo clock pause. Resuming before the first move still waits for an arrow key. Implemented by `ui/GameFlow.java`, `ui/GameController.java` and `game/ComboTracker.java`. |
-| Restart and navigation | The Restart button or `Tab` restores the selected starting level and clears run points, progress, combo, effects, snake state and timer speed. Pause and end menus also provide Main Menu. |
+| Restart and navigation | The Restart button or `Tab` restores the selected starting level and clears run points, progress, combo, effects, snake state and timer speed. `Tab` also works when a pause or end-menu button has keyboard focus. Pause and end menus also provide Main Menu. |
 | Three selectable levels | `game/Level.java` defines targets of 5, 8 and 10 coins and fixed layouts with 0, 8 and 16 obstacles. The main-menu selector can start at any level. These numbers are design choices, not fixed coursework requirements. |
 | Sequential progression | Reaching a target creates a fresh snake and level layout, clears effects and combo, retains run points and waits for an arrow key. Completing level 3 shows the final score. `game/GameSession.java` controls progression. |
 | Combo scoring | A pickup within five active seconds of the previous pickup continues the combo. Bonuses are 0, 2, 4, 6, 8, 10, then 10 points per pickup. Exactly five seconds qualifies; five seconds plus one nanosecond expires it. Pauses are excluded; level changes and restarts clear it. |
-| Fullscreen drawing | `+` enters fullscreen and `-` restores windowed dimensions while the round is ready or running and unpaused. Snake sprites now scale once, matching cells, coins and obstacles. `ui/GameView.java` handles rendering. |
+| Fullscreen drawing | `+` enters fullscreen and `-` restores windowed dimensions while the round is ready or running and unpaused. Window fullscreen-state changes also restore the canvas, scale and label sizes, including while paused or after restarting. Snake sprites scale once, matching cells, coins and obstacles. |
+| Original interface fonts | The bundled regular and shaded pixel fonts retain their original sizes and styling. Resource-stream loading supports project paths containing spaces and packaged JARs. The menu FXML uses a JavaFX 21 namespace compatible with the runtime. |
 | End state | Collision and victory stop the timer and present Restart and Main Menu actions. Movement and pause keys cannot restart an ended round. |
 
 Rainbow coins add five moves per second; blue coins allow border wrapping. Their temporary effects end when the next coin is collected, the level changes or the run restarts. Silver adds random obstacles and is generated only when there are no existing obstacles, retaining the original selection rule. The first coin of a level is ordinary. The normal menu uses normal difficulty with special coins enabled; difficulty is not selectable in the menu.
@@ -91,17 +94,17 @@ Choose a starting level, press Start and use an arrow key to begin. Avoid walls,
 
 ### Verification
 
-The clean Maven build on 6 November 2026 passed **179 JUnit test invocations with zero failures, errors or skips**. This includes 15 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios and five rendered-image scaling scenarios. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
+The latest clean Maven package build, run on 6 November 2026, passed **190 JUnit test invocations with zero failures, errors or skips**. This includes 22 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios, eight sprite-scaling/fullscreen-restoration scenarios and one menu/game font-resource integration test. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
 
-UI tests use actual JavaFX controls and the real Timeline callback. An injectable clock makes time boundaries deterministic. These tests exercise programmatic actions and rendering; they do not certify human usability, native fullscreen behavior on every display or compatibility with another computer.
+UI tests use actual JavaFX controls and the real Timeline callback. An injectable clock makes time boundaries deterministic. Keyboard events are dispatched through the scene or focused controls; seven cases specifically check `Tab` from pause, game-over and victory menu buttons. Fullscreen-state tests cover exit before starting, while paused and after restarting. The resource test loads the real main menu, checks the original font families, weights and sizes, starts the game and checks the score font without an FXML version warning.
+
+Separate local checks confirmed that a displayed window and canvas both return to `400 x 400` after fullscreen exit, and that the packaged JAR loads the original pixel fonts. These checks exercise programmatic actions and rendering; they do not certify human usability, native fullscreen behavior on every display or compatibility with another computer. Documentation was synchronized on 7 November 2026; the test date above records the actual build rather than a new test run for this documentation edit.
 
 ## 4. Implemented but Not Working Properly
 
 No failing gameplay behavior is currently known from the automated scenarios above. This is a bounded verification result rather than a claim that the game has no remaining defects.
 
-JavaFX reports that the two custom pixel fonts referenced by `src/main/resources/resources/views/styling.css` cannot be loaded in this environment. Fallback fonts allow the tests to complete, but the intended typography has not been confirmed by final human review. Native fullscreen entry/exit and the pause/menu layout should also be checked during manual play-testing.
-
-The main-menu FXML declares a JavaFX 26 namespace while the runtime is JavaFX 21.0.13, so startup logs a version warning. The packaged JAR completed a short startup smoke check without an exception; this does not verify every future FXML feature or replace visual testing.
+The previously identified fullscreen-restoration, focused-button `Tab`, font-loading and FXML-version issues have been fixed and are covered by the checks above. Final human play-testing of each level, controls, menu layout and fullscreen entry/exit remains pending, as does validation on another computer.
 
 ## 5. Features Not Implemented
 
@@ -149,8 +152,9 @@ Paths below are relative to `src/test/java/com/comp2042/`.
 | `GameControllerTest` | `ui/GameControllerTest.java` | Direction/key mappings and reversal rules. |
 | `GameFlowTest` | `ui/GameFlowTest.java` | Ready, paused, running and ended transitions. |
 | `GameControllerTimingTest` | `ui/GameControllerTimingTest.java` | Actual timer-rate restoration at level transitions. |
-| `GameViewScalingTest` | `ui/GameViewScalingTest.java` | Rendered straight/corner sprite scales and window restoration. |
-| `GameControllerLifecycleTest` | `ui/GameControllerLifecycleTest.java` | Keyboard/menu actions with pause timing, restart and end states. |
+| `GameViewScalingTest` | `ui/GameViewScalingTest.java` | Rendered straight/corner sprite scales and fullscreen exit while ready, paused or restarted. |
+| `GameControllerLifecycleTest` | `ui/GameControllerLifecycleTest.java` | Keyboard/menu actions with pause timing, restart, end states and focused-button `Tab` routing. |
+| `ViewManagerResourcesTest` | `ui/ViewManagerResourcesTest.java` | Actual menu/game font families, weights and sizes, and absence of an FXML version warning. |
 | `JavaFxTestSupport` | `ui/JavaFxTestSupport.java` | Shared JavaFX initialization and application-thread assertions. |
 
 ## 7. Modified Java Classes
@@ -168,10 +172,10 @@ These thirteen classes were present in the starter project. Moving them into `ga
 | `RainbowCoin` | `game/RainbowCoin.java` | Encapsulates the five-move speed bonus and identifies the restored rainbow selection branch. |
 | `SilverCoin` | `game/SilverCoin.java` | Adds safe obstacles and adjusts the threshold by the actual number placed, rather than a requested amount that might not fit. |
 | `Obstacle` | `game/Obstacle.java` | Fixes off-by-one coordinates, duplicates and occupied-cell overlap; provides validated fixed layouts and defensive snapshots. |
-| `GameController` | `ui/GameController.java` | Delegates rules to `GameSession`; validates input and coordinates timer, pause, restart, level changes and menus. The next-level path restores the timer's base rate after rainbow effects. |
-| `GameView` | `ui/GameView.java` | Owns snake/coin sprites, keeps canvas details private, renders corner state and presents HUD/menus. Fullscreen sprite sizes use one scale factor. |
-| `MainMenuController` | `ui/MainMenuController.java` | Initializes level selection and wires a session, controller, view, key handler and menu actions. |
-| `ViewManager` | `ui/ViewManager.java` | Owns menu/game windows and injects navigation through an instance instead of shared global window state. |
+| `GameController` | `ui/GameController.java` | Delegates rules to `GameSession`; validates input and coordinates timer, pause, restart, level changes and menus. The next-level path restores the timer's base rate after rainbow effects. A window fullscreen-state listener resizes the current session's board. |
+| `GameView` | `ui/GameView.java` | Owns snake/coin sprites, keeps canvas details private, renders corner state and presents HUD/menus. Fullscreen sprite sizes use one scale factor; windowed dimensions and label sizes are restored on exit. |
+| `MainMenuController` | `ui/MainMenuController.java` | Initializes level selection and wires a session, controller, view and menu actions. Captures game key events before focused controls can consume `Tab` for navigation. |
+| `ViewManager` | `ui/ViewManager.java` | Owns menu/game windows and injects navigation through an instance instead of shared global window state. Registers the original pixel fonts from resource streams before loading the menu. |
 
 Coin construction is separated through a small factory. Effects use ordinary polymorphic overrides in the coin hierarchy; there is no separate Strategy class. `GameSession` owns rules while the controller schedules them and the view draws them. Coordinate snapshots prevent callers from modifying snake and obstacle internals accidentally.
 
@@ -188,17 +192,19 @@ Coin construction is separated through a small factory. Effects use ordinary pol
 | Timer continued after a round ended | Stopped it on death, win, navigation and stage hiding. | `ui/GameController.java` |
 | New level model speed was 8.5 but the timer retained rainbow speed 13.5 | Explicitly synchronized the timer rate during the transition; added four controller regression scenarios. | `ui/GameController.java`, `ui/GameControllerTimingTest.java` in test sources |
 | Fullscreen enlarged sprite dimensions twice | Removed the duplicate scale factors; checked rendered bounds and exact windowed-image restoration. | `ui/GameView.java`, `ui/GameViewScalingTest.java` in test sources |
-| Independent rule tests missed interactions | Added fifteen lifecycle scenarios using actual controls, timer callbacks and a controllable clock. | `ui/GameControllerLifecycleTest.java` in test sources |
-| Custom font loading warnings | Gameplay checks pass with fallback fonts; final visual review remains pending. | `src/main/resources/resources/views/styling.css` |
-| FXML namespace version warning | The menu still declares JavaFX 26 while the runtime is 21.0.13. A packaged-JAR startup check completed without an exception; the warning is recorded for follow-up. | `src/main/resources/resources/views/MainMenu.fxml` |
+| Exiting fullscreen left an enlarged canvas in a small window | Listen to the window's actual fullscreen state and resize/redraw the current session; added ready, paused and restarted regression cases. | `ui/GameController.java`, `ui/GameView.java`, `ui/GameViewScalingTest.java` in test sources |
+| Focused menu buttons consumed `Tab` before the game received it | Capture key events at scene level before control navigation; added seven cases covering all pause/end-menu buttons. | `ui/MainMenuController.java`, `ui/GameControllerLifecycleTest.java` in test sources |
+| Independent rule tests missed interactions | Expanded to 22 lifecycle scenarios using actual controls, dispatched key events, timer callbacks and a controllable clock. | `ui/GameControllerLifecycleTest.java` in test sources |
+| Font URL paths containing spaces failed to load | Register the original bundled fonts from streams, avoiding the encoded file-path problem; verified the original font families/styles/sizes in the menu, game and packaged JAR. | `ui/ViewManager.java`, `src/main/resources/resources/views/styling.css`, `ui/ViewManagerResourcesTest.java` in test sources |
+| FXML namespace version warning | Changed the namespace from JavaFX 26 to 21 to match the supported runtime; the real menu integration check loads without this warning. | `src/main/resources/resources/views/MainMenu.fxml`, `ui/ViewManagerResourcesTest.java` in test sources |
 
-The model still stores JavaFX colors, and final-level victory currently uses the legacy `markBoardFull()` win flag. These are maintainability limitations, not separately verified gameplay failures. The diagram and Javadoc describe this implementation rather than a proposed redesign.
+The model still stores JavaFX colors, and final-level victory currently uses the legacy `markBoardFull()` win flag. These are maintainability limitations, not separately verified gameplay failures. Final design and Javadoc materials should describe the actual implementation.
 
 ## Documentation and submission materials
 
-- [Design.pdf](Design.pdf) shows production classes, relationships and multiplicities across two readable views, without attributes or methods. [docs/build_design.py](docs/build_design.py) is the editable, reproducible diagram source.
-- [Javadoc/index.html](Javadoc/index.html) is the generated source documentation. Test-only fixtures are listed above but excluded from the production design diagram and generated API pages.
+- `Design.pdf` and its generator, `docs/build_design.py`, are local drafts and have not been committed to this repository. Review the diagram against the final production classes, relationships and multiplicities before including the finished PDF in the final submission. It should omit attributes and methods unless needed to explain the design.
+- `Javadoc/` is generated locally using the tracked [generation script](scripts/generate-javadoc.ps1) and is ignored by Git. Follow the generation commands above to create it after cloning, then include the resulting folder in the final submission. Test-only fixtures are excluded from the production diagram and API pages.
 - [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) records completed materials and the remaining manual checks.
-- Generative AI assisted debugging, refactoring, implementation, testing and documentation. The separate `AI_Usage_Log.docx` records the assistance; the student must review it and complete the official COMP2042 AI Use Declaration Form. The log does not replace that form.
+- Generative AI assisted debugging, refactoring, implementation, testing and documentation. The separate `AI_Usage_Log.docx` is held locally and is not part of this repository. The student must review and update it to reflect the actual assistance, and complete the official COMP2042 AI Use Declaration Form. The log does not replace that form.
 
 The final submission folder must contain `README.md`, `Design.pdf`, `Javadoc`, the student's own-voice demonstration video and the complete project ZIP. Final packaging and submission are pending the manual checks and student details.

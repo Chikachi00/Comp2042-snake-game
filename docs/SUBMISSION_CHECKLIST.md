@@ -1,15 +1,16 @@
 # COMP2042 submission checklist
 
-Status recorded on 6 November 2026 for `feature/gameplay-enhancements`.
+Documentation status reviewed on 7 November 2026 for `feature/gameplay-enhancements`. The latest automated build below was run on 6 November 2026.
 
 ## Prepared materials
 
 - [x] README follows the eight required sections and identifies new and modified classes.
 - [x] Production source has class and method Javadoc, including parameters and return values.
-- [x] Linked HTML documentation is included in the `Javadoc` folder.
-- [x] `Design.pdf` describes the current production classes, relationships and multiplicities.
-- [x] Automated verification: 179 JUnit test invocations passed with no failures, errors or skips.
-- [x] AI assistance is acknowledged in the README. The separate usage log contains the existing feature entries and supplementary retrospective/current records.
+- [x] The Javadoc generation script is tracked. Generated `Javadoc/` is local and ignored by Git; a fresh clone must generate it before final packaging.
+- [x] A local `Design.pdf` draft and `docs/build_design.py` generator are available; both remain uncommitted while the design material is being reviewed.
+- [x] Automated verification: 190 JUnit test invocations passed with no failures, errors or skips in the latest clean Maven package build.
+- [x] Fullscreen restoration, focused-button `Tab`, pixel-font loading and the FXML version warning have regression coverage. The packaged JAR was also checked for the original fonts.
+- [x] AI assistance is acknowledged in the README. The separate usage log is held locally for review and updating.
 
 ## Student review and manual verification
 
@@ -19,10 +20,12 @@ Status recorded on 6 November 2026 for `feature/gameplay-enhancements`.
 - [ ] Check native fullscreen entry and exit, pause layout and fonts on the intended display.
 - [ ] Build and play the final version on another computer. Record the OS, JDK, build command and result; this has not yet been done.
 - [ ] Read the implementation and prepare to explain movement, effect replacement, progression, combo timing and tests.
+- [ ] Review the local design draft against the final code and finalize `Design.pdf` for submission, showing the required relationships and multiplicities.
+- [ ] Regenerate `Javadoc/` from the final source using `scripts/generate-javadoc.ps1` and check the generated pages. Older local HTML must not be treated as current after code changes.
 - [ ] Review the AI log against the actual conversations, add any missing assistance, enter student details and sign it.
 - [ ] Complete the official COMP2042 AI Use Declaration Form required by the module. The usage log is supplementary.
 - [ ] Confirm the assessor can access the GitHub repository; if it is private, add `kooitt` as required by the brief.
-- [ ] Review and merge the gameplay branch into `main`, then synchronize and verify the final version.
+- [ ] Review and merge the gameplay branch into `main`, update README branch/clone instructions for the final repository state, then synchronize and verify the final version.
 
 ## Video and final packaging
 
