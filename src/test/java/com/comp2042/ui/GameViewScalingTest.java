@@ -3,17 +3,21 @@ package com.comp2042.ui;
 import com.comp2042.game.Coin;
 import com.comp2042.game.Direction;
 import com.comp2042.game.Game;
+import com.comp2042.game.GameSession;
 import com.comp2042.game.Obstacle;
 import com.comp2042.game.Snake;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.awt.Point;
 import java.lang.reflect.Constructor;
@@ -48,21 +52,53 @@ class GameViewScalingTest extends JavaFxTestSupport {
         runOnFxThread(() -> {
             Board board = board(true);
             WritableImage normal = board.canvas.snapshot(null, null);
-            Stage stage = new Stage();
-            try {
-                board.view.scaleToFullscreen(true, stage, board.obstacle, board.snake, board.coin);
-                double fullscreenWidth = board.canvas.getWidth();
-                double fullscreenHeight = board.canvas.getHeight();
-                WritableImage fullscreen = board.canvas.snapshot(null, null);
-                board.view.scaleToFullscreen(true, stage, board.obstacle, board.snake, board.coin);
-                assertEquals(fullscreenWidth, board.canvas.getWidth());
-                assertEquals(fullscreenHeight, board.canvas.getHeight());
-                assertSamePixels(fullscreen, board.canvas.snapshot(null, null));
+            board.view.resizeForFullscreen(true, board.obstacle, board.snake, board.coin);
+            double fullscreenWidth = board.canvas.getWidth();
+            double fullscreenHeight = board.canvas.getHeight();
+            WritableImage fullscreen = board.canvas.snapshot(null, null);
+            board.view.resizeForFullscreen(true, board.obstacle, board.snake, board.coin);
+            assertEquals(fullscreenWidth, board.canvas.getWidth());
+            assertEquals(fullscreenHeight, board.canvas.getHeight());
+            assertSamePixels(fullscreen, board.canvas.snapshot(null, null));
 
-                board.view.scaleToFullscreen(false, stage, board.obstacle, board.snake, board.coin);
+            board.view.resizeForFullscreen(false, board.obstacle, board.snake, board.coin);
+            assertEquals(400, board.canvas.getWidth());
+            assertEquals(400, board.canvas.getHeight());
+            assertSamePixels(normal, board.canvas.snapshot(null, null));
+        });
+    }
+
+    @ParameterizedTest(name = "native fullscreen exit while {0}")
+    @ValueSource(strings = {"ready", "paused", "restarted"})
+    void nativeFullscreenExitRestoresTheCurrentBoard(String state) throws Exception {
+        runOnFxThread(() -> {
+            Board board = board(true);
+            Stage stage = new Stage();
+            GameSession session = new GameSession(board.game, board.snake, board.coin, board.obstacle);
+            GameController controller = new GameController(session, board.view, stage, () -> { });
+            StackPane root = new StackPane();
+            board.view.attachTo(root);
+            stage.setScene(new Scene(root, 400, 400));
+            try {
+                stage.show();
+                WritableImage normal = board.canvas.snapshot(null, null);
+                controller.handle(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.PLUS,
+                        false, false, false, false));
+                assertTrue(stage.isFullScreen());
+                assertTrue(board.canvas.getWidth() > 400, "The canvas must be enlarged before exiting");
+                if (state.equals("paused")) controller.pause();
+                if (state.equals("restarted")) controller.restart();
+
+                // Native exit changes the stage property without calling the view's resize helper.
+                stage.setFullScreen(false);
                 assertEquals(400, board.canvas.getWidth());
                 assertEquals(400, board.canvas.getHeight());
-                assertSamePixels(normal, board.canvas.snapshot(null, null));
+                assertEquals(1, field("fullScale").getDouble(board.view));
+                assertEquals("-fx-font-size: 15;", root.lookup("#scoreLabel").getStyle());
+                WritableImage restored = board.canvas.snapshot(null, null);
+                if (!state.equals("restarted")) assertSamePixels(normal, restored);
+                board.view.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
+                assertSamePixels(board.canvas.snapshot(null, null), restored);
             } finally {
                 stage.close();
             }
@@ -83,7 +119,7 @@ class GameViewScalingTest extends JavaFxTestSupport {
             grow(snake, Direction.UP);
         }
         view.drawGrid(coin, snake, obstacle);
-        return new Board(view, (Canvas) field("gridCanvas").get(view), snake, coin, obstacle);
+        return new Board(game, view, (Canvas) field("gridCanvas").get(view), snake, coin, obstacle);
     }
 
     private static void grow(Snake snake, Direction direction) throws Exception {
@@ -143,5 +179,5 @@ class GameViewScalingTest extends JavaFxTestSupport {
         return field;
     }
 
-    private record Board(GameView view, Canvas canvas, Snake snake, Coin coin, Obstacle obstacle) { }
+    private record Board(Game game, GameView view, Canvas canvas, Snake snake, Coin coin, Obstacle obstacle) { }
 }

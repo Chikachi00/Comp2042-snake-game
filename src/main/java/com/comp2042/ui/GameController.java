@@ -42,6 +42,9 @@ public class GameController {
         this.stage = stage;
         this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
         this.stage.setOnHidden(event -> animation.stop());
+        this.stage.fullScreenProperty().addListener((observable, wasFullScreen, isFullScreen) ->
+                gameView.resizeForFullscreen(isFullScreen,
+                        session.getObstacle(), session.getSnake(), session.getCoin()));
         animation.setCycleCount(Animation.INDEFINITE);
         animation.setRate(session.getSpeed());
     }
@@ -158,9 +161,9 @@ public class GameController {
             }
         }
         if (code == KeyCode.PLUS) {
-            gameView.scaleToFullscreen(true, stage, session.getObstacle(), session.getSnake(), session.getCoin());
+            stage.setFullScreen(true);
         } else if (code == KeyCode.MINUS) {
-            gameView.scaleToFullscreen(false, stage, session.getObstacle(), session.getSnake(), session.getCoin());
+            stage.setFullScreen(false);
         }
     }
 

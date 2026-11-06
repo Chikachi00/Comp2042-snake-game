@@ -23,7 +23,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
-import javafx.stage.Stage;
 
 import java.awt.*;
 import java.util.Map;
@@ -219,17 +218,14 @@ public class GameView {
     }
 
     /**
-     * Toggles fullscreen and redraws sprites at the same scale as board cells.
+     * Resizes the board and redraws its current contents to match the window's fullscreen state.
      *
      * @param fullScreen whether to enter fullscreen or restore windowed dimensions
-     * @param primaryStage JavaFX stage to initialize or resize
      * @param obstacle board obstacle collection
      * @param snek current snake
      * @param coin current or collected coin
      */
-    public void scaleToFullscreen(boolean fullScreen, Stage primaryStage, Obstacle obstacle, Snake snek, Coin coin) {
-        primaryStage.setFullScreen(fullScreen);
-
+    public void resizeForFullscreen(boolean fullScreen, Obstacle obstacle, Snake snek, Coin coin) {
         double xScaling = Screen.getPrimary().getVisualBounds().getHeight() / initY;
         double yScaling = Screen.getPrimary().getVisualBounds().getWidth() / initX;
 
