@@ -31,6 +31,7 @@ public class MainMenuController {
     @FXML private ComboBox<Level> levelSelector;
     @FXML private HBox levelOptions;
     @FXML private Label modeDescription;
+    @FXML private Label bestScoreLabel;
 
     /**
      * Defaults to classic endless play and shows level selection only for a challenge.
@@ -52,6 +53,12 @@ public class MainMenuController {
         modeDescription.setText(challenge
                 ? "Three levels, combo bonuses and optional key shortcuts."
                 : "Classic survival with special coins. No level targets or combos.");
+        refreshHighScore();
+    }
+
+    /** Refreshes the selected mode's saved record when switching modes or returning to the menu. */
+    void refreshHighScore() {
+        bestScoreLabel.setText("Best: " + viewManager.getHighScores().getBest(modeSelector.getValue()));
     }
 
     private final ViewManager viewManager;
@@ -87,7 +94,8 @@ public class MainMenuController {
         Coin coin = session.getCoin();
 
         GameView gameView = new GameView(game);
-        GameController controller = new GameController(session, gameView, gameStage, viewManager::showMainMenu);
+        GameController controller = new GameController(session, gameView, gameStage,
+                viewManager::showMainMenu, viewManager.getHighScores());
 
         StackPane gamePane = new StackPane();
         gameScene = new Scene(gamePane, 480, 480);

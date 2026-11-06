@@ -1,5 +1,6 @@
 package com.comp2042.ui;
 
+import com.comp2042.persistence.HighScoreStore;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
@@ -30,7 +31,7 @@ class ViewManagerResourcesTest extends JavaFxTestSupport {
             Stage menuStage = new Stage();
             Stage gameStage = null;
             try {
-                new ViewManager(menuStage).initializeMainMenu();
+                new ViewManager(menuStage, HighScoreStore.inMemory()).initializeMainMenu();
                 menuStage.getScene().getRoot().applyCss();
                 menuStage.getScene().getRoot().layout();
                 Label title = (Label) menuStage.getScene().lookup("#title");

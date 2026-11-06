@@ -158,7 +158,9 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
                 round.finish(won);
                 assertTrue(round.node("gameMenu").isVisible());
                 assertEquals(won ? "You won!" : "Game over", ((Label) round.menuChild(0)).getText());
-                assertEquals("Final score: " + (won ? 120 : 5), ((Label) round.menuChild(1)).getText());
+                int finalScore = won ? 120 : 5;
+                assertEquals("Final score: " + finalScore + "\nBest: " + finalScore + "\nNew high score!",
+                        ((Label) round.menuChild(1)).getText());
                 assertFalse(round.button("resumeButton").isVisible());
                 assertFalse(round.button("resumeButton").isManaged());
                 assertTrue(round.button("restartButton").isVisible());

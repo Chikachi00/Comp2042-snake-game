@@ -271,6 +271,9 @@ public final class GameSession {
     /** @return endless survival when no level is configured, otherwise the challenge mode */
     public GameMode getMode() { return level == null ? GameMode.ENDLESS : GameMode.CHALLENGE; }
 
+    /** @return total points earned in this run, retained between challenge levels */
+    public int getScorePoints() { return game.getScorePoints(); }
+
     /**
      * Returns the currently active level.
      *

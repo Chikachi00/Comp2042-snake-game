@@ -29,6 +29,9 @@ public class GameView {
     private GraphicsContext gc;
     private Label gameOverLabel, gameWonLabel, scoreLabel, progressLabel, comboLabel, startHint;
     private Label comboTime, shortcutStatus, noticeLabel, ruleHint, menuTitle, menuDetails;
+    private Label bestScoreLabel;
+    private int bestScore;
+    private boolean newHighScore;
     private ProgressBar comboBar;
     private VBox menu;
     private Button resumeButton, restartButton, mainMenuButton;
@@ -81,12 +84,13 @@ public class GameView {
         comboLabel = label("comboLabel", "", 12);
         comboTime = label("comboTime", "", 12);
         comboTime.setMinWidth(40);
+        bestScoreLabel = label("bestScoreLabel", "Best: " + bestScore, 12);
         comboBar = new ProgressBar(0);
         comboBar.setId("comboBar");
-        comboBar.setPrefWidth(96); comboBar.setMinHeight(8); comboBar.setPrefHeight(8); comboBar.setMaxHeight(8);
+        comboBar.setPrefWidth(72); comboBar.setMinHeight(8); comboBar.setPrefHeight(8); comboBar.setMaxHeight(8);
         comboBar.getStyleClass().add("combo-timer");
         HBox firstRow = new HBox(8, progressLabel, spacer(), scoreLabel);
-        HBox secondRow = new HBox(6, comboLabel, spacer(), comboBar, comboTime);
+        HBox secondRow = new HBox(6, comboLabel, spacer(), bestScoreLabel, comboBar, comboTime);
         firstRow.setAlignment(Pos.CENTER_LEFT); secondRow.setAlignment(Pos.CENTER_LEFT);
         hud = new VBox(3, firstRow, secondRow);
         hud.setAlignment(Pos.CENTER); hud.setMaxWidth(initX);
@@ -112,6 +116,7 @@ public class GameView {
         menuDetails = label("menuDetails", "", 13);
         menuTitle.setStyle("-fx-font-size: 25; -fx-text-fill: white;");
         menuDetails.setStyle("-fx-font-size: 13; -fx-text-fill: white;");
+        menuDetails.setTextAlignment(TextAlignment.CENTER);
         resumeButton = button("resumeButton", "Resume");
         restartButton = button("restartButton", "Restart");
         mainMenuButton = button("mainMenuButton", "Main Menu");
@@ -182,12 +187,25 @@ public class GameView {
     public void showEndMenu(boolean won) {
         gameOverLabel.setVisible(false); gameWonLabel.setVisible(false);
         menuTitle.setText(won ? "You won!" : "Game over");
-        menuDetails.setText("Final score: " + game.getScorePoints());
+        menuDetails.setText("Final score: " + game.getScorePoints() + "\nBest: " + bestScore
+                + (newHighScore ? "\nNew high score!" : ""));
         resumeButton.setVisible(false); resumeButton.setManaged(false); menu.setManaged(true); menu.setVisible(true);
     }
 
     /** Hides the pause/end overlay. */
     public void hideMenu() { menu.setVisible(false); menu.setManaged(false); }
+
+    /**
+     * Updates the HUD and remembers whether this run improved its mode's record.
+     * May be called before scene creation by the controller.
+     * @param bestScore current personal best for this mode
+     * @param newHighScore whether the current run has strictly exceeded the previous record
+     */
+    public void updateHighScore(int bestScore, boolean newHighScore) {
+        this.bestScore = bestScore;
+        this.newHighScore = newHighScore;
+        if (bestScoreLabel != null) bestScoreLabel.setText("Best: " + bestScore);
+    }
     /** Shows the arrow-key hint in the footer, outside the board. */
     public void showStartHint() { startHint.setVisible(true); ruleHint.setVisible(false); }
     /** Replaces the start hint with the current rule reminder. */
@@ -453,6 +471,8 @@ public class GameView {
                 : count == 0 ? "" : "Combo x" + count + " (+" + session.getComboBonus() + ")");
         double remaining = session.getComboSecondsRemaining();
         comboBar.setProgress(remaining / 5.0); comboBar.setVisible(count > 0);
+        comboBar.setManaged(session.getMode() == GameMode.CHALLENGE);
+        comboTime.setManaged(session.getMode() == GameMode.CHALLENGE);
         comboTime.setText(count == 0 ? "" : String.format(Locale.ROOT, "%.1fs", remaining));
         shortcutStatus.setText(shortcuts.stream().map(s -> s.id() + ": "
                 + (s.open() ? "Open" : s.keyAvailable() ? "Key ready" : "Locked")).collect(Collectors.joining("  |  ")));

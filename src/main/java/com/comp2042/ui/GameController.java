@@ -6,6 +6,7 @@ import com.comp2042.game.Game;
 import com.comp2042.game.GameSession;
 import com.comp2042.game.Obstacle;
 import com.comp2042.game.Snake;
+import com.comp2042.persistence.HighScoreStore;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -23,6 +24,8 @@ public class GameController {
     private final GameView gameView;
     private final Stage stage;
     private final Runnable returnToMenu;
+    private final HighScoreStore highScores;
+    private boolean newHighScore;
 
     private Direction direction = Direction.LEFT;
     private boolean keyPressed = false;
@@ -37,17 +40,36 @@ public class GameController {
      * @param returnToMenu callback for returning to the main menu
      */
     public GameController(GameSession session, GameView gameView, Stage stage, Runnable returnToMenu) {
+        this(session, gameView, stage, returnToMenu, HighScoreStore.inMemory());
+    }
+
+    /**
+     * Connects the round to a shared record store; the four-argument form uses memory only.
+     * @param session session supplying current rules and score
+     * @param gameView view to redraw and update
+     * @param stage window whose hide event stops movement and flushes records
+     * @param returnToMenu navigation callback
+     * @param highScores shared persistent store, or an isolated store for tests
+     */
+    public GameController(GameSession session, GameView gameView, Stage stage, Runnable returnToMenu,
+                          HighScoreStore highScores) {
         this.session = java.util.Objects.requireNonNull(session, "session");
         this.gameView = gameView;
         this.stage = stage;
         this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
-        this.stage.setOnHidden(event -> animation.stop());
+        this.highScores = java.util.Objects.requireNonNull(highScores, "highScores");
+        this.stage.setOnHidden(event -> {
+            animation.stop();
+            updateHighScore();
+            highScores.flush();
+        });
         this.stage.fullScreenProperty().addListener((observable, wasFullScreen, isFullScreen) -> {
             gameView.updateProgress(session);
             gameView.resizeForFullscreen(isFullScreen, session.getObstacle(), session.getSnake(), session.getCoin());
         });
         animation.setCycleCount(Animation.INDEFINITE);
         animation.setRate(session.getSpeed());
+        updateHighScore();
     }
 
     private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> advanceGame()));
@@ -57,6 +79,7 @@ public class GameController {
      */
     private void advanceGame() {
         GameSession.StepResult result = session.advance(direction);
+        updateHighScore();
         Snake snake = session.getSnake();
 
         if (result == GameSession.StepResult.ALREADY_ENDED) {
@@ -201,6 +224,8 @@ public class GameController {
      */
     public void returnToMainMenu() {
         animation.stop();
+        updateHighScore();
+        highScores.flush();
         returnToMenu.run();
     }
 
@@ -208,9 +233,13 @@ public class GameController {
      * Resets session, timer, direction, input latch and rendered progress for a fresh run.
      */
     private void reset() {
+        updateHighScore();
+        highScores.flush();
         animation.jumpTo(Duration.ZERO);
         animation.stop();
         session.reset();
+        newHighScore = false;
+        updateHighScore();
         flow.reset();
         gameView.hideMenu();
         gameView.resetTurns();
@@ -224,5 +253,11 @@ public class GameController {
         gameView.updateScoreLabel();
         gameView.updateProgress(session);
         gameView.render(session);
+    }
+
+    /** Records only improvements and refreshes mode-specific best and end-of-run feedback. */
+    private void updateHighScore() {
+        newHighScore |= highScores.record(session.getMode(), session.getScorePoints());
+        gameView.updateHighScore(highScores.getBest(session.getMode()), newHighScore);
     }
 }

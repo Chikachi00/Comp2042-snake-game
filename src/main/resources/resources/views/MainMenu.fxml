@@ -26,5 +26,6 @@
             </HBox>
         </VBox>
         <Button fx:id="btn_start" layoutY="310.0" minHeight="40.0" minWidth="115.0" mnemonicParsing="false" onAction="#handleStart" prefHeight="40.0" prefWidth="115.0" styleClass="startAndQuitBtn" text="Start" textFill="WHITE" AnchorPane.leftAnchor="217.5" />
+        <Label fx:id="bestScoreLabel" alignment="CENTER" layoutY="282.0" prefWidth="550.0" style="-fx-font-size: 14; -fx-text-fill: #52604b;" />
     </children>
 </AnchorPane>

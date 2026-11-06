@@ -2,6 +2,7 @@ package com.comp2042.ui;
 
 import com.comp2042.game.GameMode;
 import com.comp2042.game.Level;
+import com.comp2042.persistence.HighScoreStore;
 import javafx.event.Event;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -138,7 +139,7 @@ class MainMenuModeTest extends JavaFxTestSupport {
 
     private static final class TestViewManager extends ViewManager {
         Stage current;
-        TestViewManager(Stage stage) { super(stage); }
+        TestViewManager(Stage stage) { super(stage, HighScoreStore.inMemory()); }
         @Override Stage createGameStage() { current = super.createGameStage(); return current; }
     }
 }
