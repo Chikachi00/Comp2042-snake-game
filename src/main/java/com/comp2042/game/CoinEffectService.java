@@ -2,22 +2,36 @@ package com.comp2042.game;
 
 import java.util.Random;
 
-/** Applies coin effects and scoring without depending on the JavaFX timer. */
+/**
+ * Replaces temporary coin effects and awards the coin's base score.
+ */
 final class CoinEffectService {
     private final Random random;
 
+    /**
+     * Creates a helper with an independent default random source.
+     */
     CoinEffectService() {
         this(new Random());
     }
 
+    /**
+     * Creates a helper with the supplied random source.
+     *
+     * @param random random source for selection or effects
+     */
     CoinEffectService(Random random) {
         this.random = random;
     }
 
     /**
-     * Clears the previous temporary effect, applies the coin, and awards points.
+     * Clears temporary border wrapping, applies the new coin effect and awards its base points.
      *
-     * @return the speed the game timer should use after eating the coin
+     * @param coin current or collected coin
+     * @param game game settings and score state
+     * @param snake current snake
+     * @param obstacle board obstacle collection
+     * @return the speed to apply to the JavaFX timer
      */
     double apply(Coin coin, Game game, Snake snake, Obstacle obstacle) {
         snake.ignoreBorders(false);

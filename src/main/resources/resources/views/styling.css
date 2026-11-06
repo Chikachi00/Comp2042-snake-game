@@ -1,12 +1,10 @@
-@font-face {
-    src: url("res/SFPixelateShaded-Bold.ttf");
-}
-@font-face {
-    src: url("res/SFPixelate.ttf");
-}
-
 .root {
     -fx-background-color: White;
+}
+
+.menu-choice .list-cell {
+    -fx-font-family: "SF Pixelate";
+    -fx-font-size: 14;
 }
 
 .button {
@@ -48,7 +46,8 @@
 }
 
 #title {
-    -fx-font-family: "SF Pixelate Shaded", bold;
+    -fx-font-family: "SF Pixelate Shaded";
+    -fx-font-weight: bold;
     -fx-font-size: 40;
 }
 
@@ -63,4 +62,20 @@
 #scoreLabel {
     -fx-font-family: "SF Pixelate";
     -fx-font-size: 20;
+}
+
+.combo-timer {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+.combo-timer .track {
+    -fx-background-color: #dce2cb;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+.combo-timer .bar {
+    -fx-background-color: #557849;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
 }

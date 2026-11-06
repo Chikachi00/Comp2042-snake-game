@@ -1,26 +1,54 @@
 package com.comp2042.ui;
 
+import com.comp2042.persistence.HighScoreStore;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
-/** Owns the menu and game windows and switches between them. */
+/**
+ * Creates game windows and switches between the main menu and game stage.
+ */
 public class ViewManager {
     private final Stage primaryStage;
+    private final HighScoreStore highScores;
     private final Image snakeLogo = new Image("resources/views/res/SnakeLogoWhite.png");
     private Stage gameStage;
+    private MainMenuController mainMenuController;
 
+    /**
+     * Stores the primary stage used to display the main menu.
+     *
+     * @param primaryStage JavaFX stage to initialize or resize
+     */
     public ViewManager(Stage primaryStage) {
-        this.primaryStage = Objects.requireNonNull(primaryStage, "primaryStage");
+        this(primaryStage, HighScoreStore.forCurrentUser());
     }
 
-    /** Loads the main menu once and shows the JavaFX primary stage. */
+    /**
+     * Shares one record store across mode changes and allows isolated persistence tests.
+     * @param primaryStage stage used to display the main menu
+     * @param highScores record store shared by all rounds in this application
+     */
+    public ViewManager(Stage primaryStage, HighScoreStore highScores) {
+        this.primaryStage = Objects.requireNonNull(primaryStage, "primaryStage");
+        this.highScores = Objects.requireNonNull(highScores, "highScores");
+    }
+
+    /** @return the application's shared personal-record store */
+    HighScoreStore getHighScores() { return highScores; }
+
+    /**
+     * Loads FXML with an injected controller and shows the main menu.
+     */
     public void initializeMainMenu() {
+        loadPixelFonts();
         FXMLLoader loader = new FXMLLoader(ViewManager.class.getResource("/resources/views/MainMenu.fxml"));
         loader.setControllerFactory(type -> {
             if (type == MainMenuController.class) {
@@ -31,6 +59,7 @@ public class ViewManager {
         final AnchorPane root;
         try {
             root = loader.load();
+            mainMenuController = loader.getController();
         } catch (IOException exception) {
             throw new IllegalStateException("Could not load the main menu", exception);
         }
@@ -41,6 +70,27 @@ public class ViewManager {
         primaryStage.show();
     }
 
+    /**
+     * Registers the original pixel fonts from streams, supporting spaces in paths and JAR resources.
+     */
+    private static void loadPixelFonts() {
+        for (String name : new String[] {"SFPixelate.ttf", "SFPixelateShaded-Bold.ttf"}) {
+            String resource = "/resources/views/res/" + name;
+            try (InputStream input = ViewManager.class.getResourceAsStream(resource)) {
+                if (input == null || Font.loadFont(input, 12) == null) {
+                    throw new IllegalStateException("Could not load bundled font: " + resource);
+                }
+            } catch (IOException exception) {
+                throw new IllegalStateException("Could not read bundled font: " + resource, exception);
+            }
+        }
+    }
+
+    /**
+     * Creates and stores a new game stage.
+     *
+     * @return the newly created game stage
+     */
     Stage createGameStage() {
         gameStage = new Stage();
         gameStage.setTitle("Snake Game");
@@ -49,13 +99,22 @@ public class ViewManager {
         return gameStage;
     }
 
+    /**
+     * Shows the game scene and hides the main menu.
+     *
+     * @param gameScene scene containing the playable game
+     */
     void showGame(Scene gameScene) {
         gameStage.setScene(gameScene);
         gameStage.show();
         primaryStage.hide();
     }
 
+    /**
+     * Shows the main menu and closes the current game stage.
+     */
     void showMainMenu() {
+        mainMenuController.refreshHighScore();
         primaryStage.show();
         if (gameStage != null) {
             gameStage.close();
