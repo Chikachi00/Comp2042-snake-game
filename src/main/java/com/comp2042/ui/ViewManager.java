@@ -4,9 +4,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Objects;
 
 /**
@@ -30,6 +32,7 @@ public class ViewManager {
      * Loads FXML with an injected controller and shows the main menu.
      */
     public void initializeMainMenu() {
+        loadPixelFonts();
         FXMLLoader loader = new FXMLLoader(ViewManager.class.getResource("/resources/views/MainMenu.fxml"));
         loader.setControllerFactory(type -> {
             if (type == MainMenuController.class) {
@@ -48,6 +51,22 @@ public class ViewManager {
         primaryStage.getIcons().add(snakeLogo);
         primaryStage.setTitle("Snake Game");
         primaryStage.show();
+    }
+
+    /**
+     * Registers the original pixel fonts from streams, supporting spaces in paths and JAR resources.
+     */
+    private static void loadPixelFonts() {
+        for (String name : new String[] {"SFPixelate.ttf", "SFPixelateShaded-Bold.ttf"}) {
+            String resource = "/resources/views/res/" + name;
+            try (InputStream input = ViewManager.class.getResourceAsStream(resource)) {
+                if (input == null || Font.loadFont(input, 12) == null) {
+                    throw new IllegalStateException("Could not load bundled font: " + resource);
+                }
+            } catch (IOException exception) {
+                throw new IllegalStateException("Could not read bundled font: " + resource, exception);
+            }
+        }
     }
 
     /**
