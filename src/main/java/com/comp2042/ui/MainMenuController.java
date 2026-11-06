@@ -12,6 +12,9 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
+/**
+ * Loads level choices and constructs a game when the FXML Start action is invoked.
+ */
 public class MainMenuController {
 
     private static final int X_VALUE = 20;
@@ -22,6 +25,9 @@ public class MainMenuController {
     private Scene gameScene;
     @FXML private ComboBox<Level> levelSelector;
 
+    /**
+     * Populates the FXML level selector and chooses level one by default.
+     */
     @FXML private void initialize() {
         levelSelector.getItems().setAll(Level.values());
         levelSelector.setValue(Level.ONE);
@@ -29,16 +35,29 @@ public class MainMenuController {
 
     private final ViewManager viewManager;
 
+    /**
+     * Connects the FXML controller to window navigation.
+     *
+     * @param viewManager manager responsible for menu and game windows
+     */
     public MainMenuController(ViewManager viewManager) {
         this.viewManager = viewManager;
     }
 
+    /**
+     * Creates a game window using the selected starting level.
+     */
     public void handleStart() {
         Stage gameStage = viewManager.createGameStage();
         launchSnake(gameStage);
         viewManager.showGame(gameScene);
     }
 
+    /**
+     * Builds the session, controller, view and button/key wiring for the game scene.
+     *
+     * @param gameStage stage that will host the new game
+     */
     private void launchSnake(Stage gameStage) {
         Game game = new Game(X_VALUE, Y_VALUE, POWER_UP, DIFFICULTY);
         GameSession session = new GameSession(game, levelSelector.getValue());

@@ -9,17 +9,26 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Objects;
 
-/** Owns the menu and game windows and switches between them. */
+/**
+ * Creates game windows and switches between the main menu and game stage.
+ */
 public class ViewManager {
     private final Stage primaryStage;
     private final Image snakeLogo = new Image("resources/views/res/SnakeLogoWhite.png");
     private Stage gameStage;
 
+    /**
+     * Stores the primary stage used to display the main menu.
+     *
+     * @param primaryStage JavaFX stage to initialize or resize
+     */
     public ViewManager(Stage primaryStage) {
         this.primaryStage = Objects.requireNonNull(primaryStage, "primaryStage");
     }
 
-    /** Loads the main menu once and shows the JavaFX primary stage. */
+    /**
+     * Loads FXML with an injected controller and shows the main menu.
+     */
     public void initializeMainMenu() {
         FXMLLoader loader = new FXMLLoader(ViewManager.class.getResource("/resources/views/MainMenu.fxml"));
         loader.setControllerFactory(type -> {
@@ -41,6 +50,11 @@ public class ViewManager {
         primaryStage.show();
     }
 
+    /**
+     * Creates and stores a new game stage.
+     *
+     * @return the newly created game stage
+     */
     Stage createGameStage() {
         gameStage = new Stage();
         gameStage.setTitle("Snake Game");
@@ -49,12 +63,20 @@ public class ViewManager {
         return gameStage;
     }
 
+    /**
+     * Shows the game scene and hides the main menu.
+     *
+     * @param gameScene scene containing the playable game
+     */
     void showGame(Scene gameScene) {
         gameStage.setScene(gameScene);
         gameStage.show();
         primaryStage.hide();
     }
 
+    /**
+     * Shows the main menu and closes the current game stage.
+     */
     void showMainMenu() {
         primaryStage.show();
         if (gameStage != null) {

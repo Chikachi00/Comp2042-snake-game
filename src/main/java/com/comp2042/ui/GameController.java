@@ -15,6 +15,9 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * Coordinates keyboard and menu input with the session, JavaFX timer and view.
+ */
 public class GameController {
     private final GameSession session;
     private final GameView gameView;
@@ -25,6 +28,14 @@ public class GameController {
     private boolean keyPressed = false;
     private final GameFlow flow = new GameFlow();
 
+    /**
+     * Connects a session and view to a stage and configures the repeating movement timer.
+     *
+     * @param session session supplying the game rules and current state
+     * @param gameView view to redraw and update
+     * @param stage game window whose hide event stops the timer
+     * @param returnToMenu callback for returning to the main menu
+     */
     public GameController(GameSession session, GameView gameView, Stage stage, Runnable returnToMenu) {
         this.session = java.util.Objects.requireNonNull(session, "session");
         this.gameView = gameView;
@@ -37,6 +48,9 @@ public class GameController {
 
     private final Timeline animation = new Timeline(new KeyFrame(Duration.seconds(1), event -> advanceGame()));
 
+    /**
+     * Processes a timer step and updates the view, menus and timer rate for its result.
+     */
     private void advanceGame() {
         GameSession.StepResult result = session.advance(direction);
         Snake snake = session.getSnake();
@@ -88,6 +102,12 @@ public class GameController {
         }
     }
 
+    /**
+     * Maps arrow keys to model directions.
+     *
+     * @param key keyboard code to translate
+     * @return the movement direction, or null for a non-arrow key
+     */
     static Direction directionForKey(KeyCode key) {
         return switch (key) {
             case LEFT -> Direction.LEFT;
@@ -98,10 +118,18 @@ public class GameController {
         };
     }
 
+    /**
+     * Stops the movement timer.
+     */
     private void stopAnimation() {
         animation.stop();
     }
 
+    /**
+     * Handles movement, pause, restart and fullscreen keyboard input.
+     *
+     * @param event key-press event from the game scene
+     */
     public void handle(KeyEvent event) {
         KeyCode code = event.getCode();
         if (code == KeyCode.TAB) {
@@ -136,6 +164,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Pauses the timer and combo clock and shows the pause menu.
+     */
     public void pause() {
         if (!flow.pause()) return;
         animation.pause();
@@ -143,6 +174,9 @@ public class GameController {
         gameView.showPauseMenu();
     }
 
+    /**
+     * Hides the pause menu and resumes movement only if it was previously running.
+     */
     public void resume() {
         if (!flow.isPaused()) return;
         boolean wasRunning = flow.resume();
@@ -151,15 +185,24 @@ public class GameController {
         if (wasRunning) animation.play();
     }
 
+    /**
+     * Restarts the selected run and waits for a new arrow key.
+     */
     public void restart() {
         reset();
     }
 
+    /**
+     * Stops the timer and invokes the navigation callback.
+     */
     public void returnToMainMenu() {
         animation.stop();
         returnToMenu.run();
     }
 
+    /**
+     * Resets session, timer, direction, input latch and rendered progress for a fresh run.
+     */
     private void reset() {
         animation.jumpTo(Duration.ZERO);
         animation.stop();

@@ -11,7 +11,7 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Stores obstacle positions and generates obstacles on the game board.
+ * Stores obstacle coordinates and selects free cells for bounded, non-overlapping layouts.
  */
 public class Obstacle {
     private static final int MAX_OBSTACLES = 50;
@@ -32,6 +32,13 @@ public class Obstacle {
         this(x, y, new Random());
     }
 
+    /**
+     * Creates an empty obstacle collection for the given board.
+     *
+     * @param x board width in cells
+     * @param y board height in cells
+     * @param random random source for selection or effects
+     */
     Obstacle(int x, int y, Random random) {
         this.x = x;
         this.y = y;
@@ -39,23 +46,25 @@ public class Obstacle {
     }
 
     /**
-     * Adds obstacles while avoiding the snake and current coin.
+     * Adds distinct free cells, excluding the snake, coin and existing obstacles; stops at the space
+     * or fifty-obstacle limit.
      *
-     * @param snake the current snake
-     * @param coin the current coin
-     * @param amount the requested number of additional obstacles
+     * @param snake current snake
+     * @param coin current or collected coin
+     * @param amount requested number of additional obstacles
      */
     public void newObstacles(Snake snake, Coin coin, int amount) {
         newObstacles(snake.getHead(), snake.getBody(), coin.getPos(), amount);
     }
 
     /**
-     * Selects free cells without replacement, respecting space and the obstacle limit.
+     * Adds distinct free cells, excluding the snake, coin and existing obstacles; stops at the space
+     * or fifty-obstacle limit.
      *
-     * @param snakeHead the occupied head position
-     * @param snakeBody the occupied body positions
-     * @param coinPosition the occupied coin position
-     * @param amount the requested number of additional obstacles
+     * @param snakeHead occupied head position
+     * @param snakeBody occupied body positions
+     * @param coinPosition position of the current coin
+     * @param amount requested number of additional obstacles
      */
     void newObstacles(Point snakeHead, List<Point> snakeBody, Point coinPosition, int amount) {
         int remainingCapacity = MAX_OBSTACLES - obstacles.size();
@@ -83,19 +92,39 @@ public class Obstacle {
         obstacles.addAll(freeCells.subList(0, count));
     }
 
+    /**
+     * Returns the obstacle drawing color.
+     *
+     * @return the JavaFX obstacle color
+     */
     public Color getColor() {
         return color;
     }
 
-    /** Returns a snapshot whose coordinates cannot change the board. */
+    /**
+     * Returns an unmodifiable snapshot with independent coordinate objects.
+     *
+     * @return the occupied obstacle cells
+     */
     public List<Point> getObstacles() {
         return obstacles.stream().map(Point::new).toList();
     }
 
+    /**
+     * Checks whether an obstacle occupies a coordinate.
+     *
+     * @param position board position in cell coordinates
+     * @return whether the position is blocked
+     */
     boolean occupies(Point position) {
         return obstacles.contains(position);
     }
 
+    /**
+     * Replaces the layout after checking bounds, uniqueness and the obstacle limit.
+     *
+     * @param positions distinct in-bounds obstacle coordinates, at most fifty
+     */
     void setLayout(List<Point> positions) {
         Set<Point> unique = new HashSet<>();
         for (Point p : positions) {
@@ -108,6 +137,9 @@ public class Obstacle {
         positions.forEach(p -> obstacles.add(new Point(p)));
     }
 
+    /**
+     * Removes all obstacles.
+     */
     public void reset() {
         obstacles.clear();
     }

@@ -29,7 +29,9 @@ import java.awt.*;
 import java.util.Map;
 import java.util.List;
 
-/** Renders the game board and owns its sprite images. */
+/**
+ * Draws board sprites and presents progress labels, pause menus and end menus.
+ */
 public class GameView {
 
     private Canvas gridCanvas;
@@ -68,11 +70,23 @@ public class GameView {
     private boolean fullsize = false;
     private final int[][] turnArray;
 
+    /**
+     * Creates sprite resources and a turn map for the supplied game.
+     *
+     * @param game game settings and score state
+     */
     public GameView(Game game) {
         this.game = game;
         this.turnArray = new int[game.getWidth()][game.getHeight()];
     }
 
+    /**
+     * Creates the board canvas, status labels and menu controls for a scene.
+     *
+     * @param scene scene defining the initial canvas dimensions
+     * @param snek current snake
+     * @param coin current or collected coin
+     */
     public void makeScene(Scene scene, Snake snek, Coin coin) {
         gridCanvas = new Canvas(scene.getWidth(), scene.getHeight());
         initX = scene.getWidth();
@@ -124,13 +138,22 @@ public class GameView {
         hideMenu();
     }
 
-    /** Connects menu buttons to the controller without exposing the controls. */
+    /**
+     * Connects the resume, restart and main-menu buttons to controller actions.
+     *
+     * @param resume action for the Resume button
+     * @param restart action for the Restart button
+     * @param mainMenu action for the Main Menu button
+     */
     public void setMenuActions(Runnable resume, Runnable restart, Runnable mainMenu) {
         resumeButton.setOnAction(event -> resume.run());
         restartButton.setOnAction(event -> restart.run());
         mainMenuButton.setOnAction(event -> mainMenu.run());
     }
 
+    /**
+     * Shows all pause-menu actions.
+     */
     public void showPauseMenu() {
         menuTitle.setText("Paused");
         menuDetails.setText("P / Esc: Resume     Tab: Restart");
@@ -140,6 +163,11 @@ public class GameView {
         menu.setVisible(true);
     }
 
+    /**
+     * Shows the final score with restart and main-menu actions.
+     *
+     * @param won whether the run ended in victory
+     */
     public void showEndMenu(boolean won) {
         gameOverLabel.setVisible(false);
         gameWonLabel.setVisible(false);
@@ -151,20 +179,35 @@ public class GameView {
         menu.setVisible(true);
     }
 
+    /**
+     * Hides the menu and removes it from layout calculations.
+     */
     public void hideMenu() {
         menu.setVisible(false);
         menu.setManaged(false);
     }
 
+    /**
+     * Shows the prompt to start or continue with an arrow key.
+     */
     public void showStartHint() { startHint.setVisible(true); }
+    /**
+     * Hides the arrow-key start prompt.
+     */
     public void hideStartHint() { startHint.setVisible(false); }
 
-    /** Clears old turn sprites when a round is restarted. */
+    /**
+     * Clears turn sprites left by an earlier snake.
+     */
     public void resetTurns() {
         for (int[] column : turnArray) java.util.Arrays.fill(column, 0);
     }
 
-    /** Adds the board and its labels to the game pane in display order. */
+    /**
+     * Adds the canvas, HUD, hint and menus to the game pane in drawing order.
+     *
+     * @param gamePane pane that will contain board and interface controls
+     */
     public void attachTo(StackPane gamePane) {
         gamePane.getChildren().addAll(gridCanvas, gameOverLabel, gameWonLabel, scoreLabel, progressLabel, comboLabel, startHint, menu);
         gamePane.setPadding(new Insets(20));
@@ -175,6 +218,15 @@ public class GameView {
         StackPane.setAlignment(comboLabel, Pos.TOP_RIGHT);
     }
 
+    /**
+     * Toggles fullscreen and redraws sprites at the same scale as board cells.
+     *
+     * @param fullScreen whether to enter fullscreen or restore windowed dimensions
+     * @param primaryStage JavaFX stage to initialize or resize
+     * @param obstacle board obstacle collection
+     * @param snek current snake
+     * @param coin current or collected coin
+     */
     public void scaleToFullscreen(boolean fullScreen, Stage primaryStage, Obstacle obstacle, Snake snek, Coin coin) {
         primaryStage.setFullScreen(fullScreen);
 
@@ -205,7 +257,13 @@ public class GameView {
         scoreLabel.setStyle(fullScreen ? "-fx-font-size: 35;" : "-fx-font-size: 15;");
     }
 
-    /** Redraws the current game state, including any obstacles. */
+    /**
+     * Redraws the board, coin, snake and obstacles.
+     *
+     * @param coin current or collected coin
+     * @param snek current snake
+     * @param obstacle board obstacle collection
+     */
     public void drawGrid(Coin coin, Snake snek, Obstacle obstacle) {
         drawBoardContents(coin, snek);
         gc.setFill(obstacle.getColor());
@@ -214,6 +272,12 @@ public class GameView {
         }
     }
 
+    /**
+     * Clears the canvas and draws the coin and snake.
+     *
+     * @param coin current or collected coin
+     * @param snek current snake
+     */
     private void drawBoardContents(Coin coin, Snake snek) {
         gc.setFill(game.getColor());
         gc.fillRect(0, 0, gridCanvas.getWidth(), gridCanvas.getHeight());
@@ -230,6 +294,12 @@ public class GameView {
         drawHead(snek);
     }
 
+    /**
+     * Converts a movement direction to a sprite rotation.
+     *
+     * @param direction requested movement direction
+     * @return the clockwise rotation in degrees
+     */
     private static int rotation(Direction direction) {
         return switch (direction) {
             case UP -> 0;
@@ -239,6 +309,11 @@ public class GameView {
         };
     }
 
+    /**
+     * Draws the rotated snake head at one scaled cell size.
+     *
+     * @param snek current snake
+     */
     private void drawHead(Snake snek) {
         imageHead.setRotate(rotation(snek.getDirection()));
         SnapshotParameters params = new SnapshotParameters();
@@ -247,6 +322,14 @@ public class GameView {
         gc.drawImage(rotatedImage, (snek.getHead().x * game.getMultiplier()) * fullScale, (snek.getHead().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale, game.getMultiplier() * fullScale);
     }
 
+    /**
+     * Draws a tail, corner or straight segment at one scaled cell size.
+     *
+     * @param snek current snake
+     * @param body tail-to-head body coordinates
+     * @param point board coordinate of the segment to draw
+     * @param index index of the body segment
+     */
     private void drawBody(Snake snek, List<Point> body, Point point, int index) {
         Image rotatedImage;
         if (body.size() <= 1) {
@@ -288,6 +371,13 @@ public class GameView {
         gc.drawImage(rotatedImage, (point.x * game.getMultiplier()) * fullScale, (point.y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale, game.getMultiplier() * fullScale);
     }
 
+    /**
+     * Records a corner sprite at the head when its requested direction changes.
+     *
+     * @param snek current snake
+     * @param lastKey previous accepted direction
+     * @param key new accepted direction
+     */
     public void turnDir(Snake snek, Direction lastKey, Direction key) {
         if ((lastKey == Direction.LEFT && key == Direction.UP) || (lastKey == Direction.DOWN && key == Direction.RIGHT)) {
             turnArray[(int) snek.getHead().getX()][(int) snek.getHead().getY()] = 2;
@@ -300,6 +390,11 @@ public class GameView {
         } else turnArray[(int) snek.getHead().getX()][(int) snek.getHead().getY()] = 0;
     }
 
+    /**
+     * Synchronizes the legacy game-over label with the snake's collision state.
+     *
+     * @param snek current snake
+     */
     public void gameOver(Snake snek) {
         if (snek.getDead() && !gameOverVis) {
             gameOverVis = true;
@@ -310,6 +405,9 @@ public class GameView {
         }
     }
 
+    /**
+     * Synchronizes the legacy victory label with the game's win condition.
+     */
     public void gameWon() {
         if (game.gameWon() && !gameWonVis) {
             gameWonVis = true;
@@ -320,6 +418,11 @@ public class GameView {
         }
     }
 
+    /**
+     * Updates the level objective and currently active combo labels.
+     *
+     * @param session session supplying the game rules and current state
+     */
     public void updateProgress(GameSession session) {
         if (session.getLevel() != null) {
             progressLabel.setText(session.getLevel() + "  |  Coins: " + session.getLevelCoins()
@@ -329,6 +432,9 @@ public class GameView {
         }
     }
 
+    /**
+     * Displays the current accumulated run score.
+     */
     public void updateScoreLabel() {
         scoreLabel.setText("Score: " + game.getScorePoints());
     }

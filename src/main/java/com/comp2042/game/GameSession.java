@@ -2,9 +2,25 @@ package com.comp2042.game;
 
 import java.util.Optional;
 
-/** Maintains the rules and state of a single game, independently of the UI timer. */
+/**
+ * Coordinates movement, coins, scoring and level progression independently of the UI timer.
+ */
 public final class GameSession {
-    public enum StepResult { MOVED, COIN_EATEN, LEVEL_COMPLETED, WON, DIED, ALREADY_ENDED }
+    /** Describes the outcome of one session advance. */
+    public enum StepResult {
+        /** Moved without collecting a coin. */
+        MOVED,
+        /** Collected a coin within the current level. */
+        COIN_EATEN,
+        /** Initialized the next level. */
+        LEVEL_COMPLETED,
+        /** Reached a winning condition. */
+        WON,
+        /** Collided during movement. */
+        DIED,
+        /** Ignored a step after the round ended. */
+        ALREADY_ENDED
+    }
 
     private final Game game;
     private final Obstacle obstacle;
@@ -18,15 +34,35 @@ public final class GameSession {
     private Level level;
     private int levelCoins;
 
+    /**
+     * Creates a legacy round with supplied game objects and default coin services.
+     *
+     * @param game game settings and score state
+     * @param snake current snake
+     * @param coin current or collected coin
+     * @param obstacle board obstacle collection
+     */
     public GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle) {
         this(game, snake, coin, obstacle, new CoinFactory(), new CoinEffectService());
     }
 
-    /** Starts a run at the selected level on the standard 20 by 20 board. */
+    /**
+     * Starts a progressive run at the selected level on the standard twenty by twenty board.
+     *
+     * @param game game settings and score state
+     * @param startingLevel first level to play and the level to restore on restart
+     */
     public GameSession(Game game, Level startingLevel) {
         this(game, startingLevel, System::nanoTime);
     }
 
+    /**
+     * Starts a progressive run with an injectable clock for deterministic combo timing.
+     *
+     * @param game game settings and score state
+     * @param startingLevel first level to play and the level to restore on restart
+     * @param clock monotonic clock returning nanoseconds
+     */
     GameSession(Game game, Level startingLevel, java.util.function.LongSupplier clock) {
         if (game.getWidth() != 20 || game.getHeight() != 20) {
             throw new IllegalArgumentException("Levels require a 20 by 20 board");
@@ -40,6 +76,16 @@ public final class GameSession {
         initializeLevel(startingLevel);
     }
 
+    /**
+     * Creates a legacy round with injectable coin services for deterministic tests.
+     *
+     * @param game game settings and score state
+     * @param snake current snake
+     * @param coin current or collected coin
+     * @param obstacle board obstacle collection
+     * @param coinFactory factory used to place subsequent coins
+     * @param coinEffects service used to apply effects and base points
+     */
     GameSession(Game game, Snake snake, Coin coin, Obstacle obstacle,
                 CoinFactory coinFactory, CoinEffectService coinEffects) {
         this.game = game;
@@ -52,7 +98,13 @@ public final class GameSession {
         this.speed = game.getSpeed();
     }
 
-    /** Advances one movement and applies any resulting coin, collision or win rules. */
+    /**
+     * Advances one move and resolves collision, growth, effects, scoring and level completion. The
+     * controller is responsible for withholding calls while paused.
+     *
+     * @param direction requested movement direction
+     * @return the event produced by this move, or ALREADY_ENDED if the round is over
+     */
     public StepResult advance(Direction direction) {
         if (isOver()) {
             return StepResult.ALREADY_ENDED;
@@ -90,7 +142,9 @@ public final class GameSession {
         return game.gameWon() ? StepResult.WON : StepResult.COIN_EATEN;
     }
 
-    /** Starts a new round using the existing game settings. */
+    /**
+     * Restarts from the selected starting level with zero run points, or resets a legacy round.
+     */
     public void reset() {
         if (startingLevel != null) {
             game.resetScore();
@@ -104,6 +158,11 @@ public final class GameSession {
         game.resetScore();
     }
 
+    /**
+     * Resets the snake, layout, temporary effects and combo while retaining run points.
+     *
+     * @param next level to initialize
+     */
     private void initializeLevel(Level next) {
         level = next;
         levelCoins = 0;
@@ -118,17 +177,68 @@ public final class GameSession {
         speed = game.getSpeed();
     }
 
+    /**
+     * Freezes combo time; movement is stopped separately by the controller.
+     */
     public void pause() { combo.pause(); }
+    /**
+     * Resumes combo time after excluding the paused duration.
+     */
     public void resume() { combo.resume(); }
+    /**
+     * Returns the live combo count.
+     *
+     * @return the consecutive coin count, or zero when expired
+     */
     public int getComboCount() { return combo.count(); }
+    /**
+     * Returns the live combo's latest awarded bonus.
+     *
+     * @return the latest bonus, or zero when expired
+     */
     public int getComboBonus() { return combo.lastBonus(); }
 
+    /**
+     * Returns the currently active level.
+     *
+     * @return the active level, or null for a legacy round
+     */
     public Level getLevel() { return level; }
+    /**
+     * Returns progress toward the active level objective.
+     *
+     * @return the number of coins collected in this level
+     */
     public int getLevelCoins() { return levelCoins; }
 
+    /**
+     * Checks whether collision or a win condition has ended the round.
+     *
+     * @return whether further movement should be stopped
+     */
     public boolean isOver() { return snake.getDead() || game.gameWon(); }
+    /**
+     * Returns the snake owned by this session.
+     *
+     * @return the current snake, which is replaced on level changes and restarts
+     */
     public Snake getSnake() { return snake; }
+    /**
+     * Returns the current pickup.
+     *
+     * @return the current coin
+     */
     public Coin getCoin() { return coin; }
+    /**
+     * Returns the obstacle collection used by this session.
+     *
+     * @return the current obstacle collection
+     */
     public Obstacle getObstacle() { return obstacle; }
+    /**
+     * Returns the movement speed after the active coin effect.
+     *
+     * @return the number of moves per second
+     */
     public double getSpeed() { return speed; }
 }

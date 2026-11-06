@@ -31,3 +31,6 @@ hs_err_pid*
 # Maven
 /target/
 dependency-reduced-pom.xml
+
+# Generated Javadoc for the final coursework submission
+/Javadoc/

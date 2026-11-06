@@ -4,17 +4,49 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-/** The objective and fixed obstacle layout for each playable level. */
+/**
+ * Defines coin objectives and fixed obstacle layouts for the standard twenty-cell square board.
+ */
 public enum Level {
-    ONE(1, 5), TWO(2, 8), THREE(3, 10);
+    /** First level, requiring five coins. */
+    ONE(1, 5),
+    /** Second level, requiring eight coins. */
+    TWO(2, 8),
+    /** Final level, requiring ten coins. */
+    THREE(3, 10);
     private final int number;
     private final int target;
+    /**
+     * Defines a level number and its collected-coin target.
+     *
+     * @param number one-based level number
+     * @param target required number of collected coins
+     */
     Level(int number, int target) { this.number = number; this.target = target; }
+    /**
+     * Returns the level number shown to the player.
+     *
+     * @return the one-based level number
+     */
     public int number() { return number; }
+    /**
+     * Returns the objective used to complete the level.
+     *
+     * @return the number of coins required
+     */
     public int target() { return target; }
+    /**
+     * Finds the next level in the run.
+     *
+     * @return the next level, or null after level three
+     */
     public Level next() { return this == THREE ? null : values()[ordinal() + 1]; }
 
-    /** Layouts are designed for the 20 by 20 game board. */
+    /**
+     * Builds a fresh copy of this level's fixed layout.
+     *
+     * @return obstacle coordinates on a twenty by twenty board
+     */
     List<Point> obstaclePositions() {
         List<Point> points = new ArrayList<>();
         if (this == TWO) {
@@ -28,5 +60,10 @@ public enum Level {
         }
         return points;
     }
+    /**
+     * Formats the level display name.
+     *
+     * @return the level display name
+     */
     @Override public String toString() { return "Level " + number; }
 }
