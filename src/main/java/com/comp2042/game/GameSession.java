@@ -1,6 +1,7 @@
 package com.comp2042.game;
 
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Coordinates movement, coins, scoring and level progression independently of the UI timer.
@@ -12,6 +13,8 @@ public final class GameSession {
         MOVED,
         /** Collected a coin within the current level. */
         COIN_EATEN,
+        /** Collected a key and permanently opened its shortcut. */
+        SHORTCUT_OPENED,
         /** Initialized the next level. */
         LEVEL_COMPLETED,
         /** Reached a winning condition. */
@@ -33,6 +36,9 @@ public final class GameSession {
     private Level startingLevel;
     private Level level;
     private int levelCoins;
+    private List<Shortcut> shortcuts = List.of();
+    private String openedShortcut;
+    private long openedAt;
 
     /**
      * Creates a legacy round with supplied game objects and default coin services.
@@ -111,10 +117,21 @@ public final class GameSession {
         }
         snake.move(direction);
         if (snake.getDead()) {
+            combo.pause();
             return StepResult.DIED;
         }
-        if (!snake.ateCoin(coin)) {
-            return StepResult.MOVED;
+        boolean ateCoin = snake.ateCoin(coin);
+        boolean opened = false;
+        for (Shortcut shortcut : shortcuts) {
+            if (shortcut.collect(snake.getHead())) {
+                opened = true;
+                openedShortcut = shortcut.snapshot().id();
+                openedAt = combo.activeTimeNanos();
+            }
+        }
+        if (opened) synchronizeShortcuts();
+        if (!ateCoin) {
+            return opened ? StepResult.SHORTCUT_OPENED : StepResult.MOVED;
         }
 
         speed = coinEffects.apply(coin, game, snake, obstacle);
@@ -122,9 +139,14 @@ public final class GameSession {
         if (level != null) {
             game.addPoints(combo.recordCoin());
             levelCoins++;
+            if (levelCoins == 1) {
+                shortcuts.forEach(Shortcut::activate);
+                synchronizeShortcuts();
+            }
             if (levelCoins >= level.target() || game.gameWon()) {
                 if (level.next() == null) {
                     game.markBoardFull();
+                    combo.pause();
                     return StepResult.WON;
                 }
                 initializeLevel(level.next());
@@ -132,13 +154,15 @@ public final class GameSession {
             }
         }
         if (!game.gameWon()) {
-            Optional<Coin> nextCoin = coinFactory.createCoin(game, snake, obstacle);
+            Optional<Coin> nextCoin = level == null ? coinFactory.createCoin(game, snake, obstacle)
+                    : coinFactory.createCoin(game, snake, obstacle, level.preferredCoinPosition(levelCoins), false);
             if (nextCoin.isPresent()) {
                 coin = nextCoin.get();
             } else {
                 game.markBoardFull();
             }
         }
+        if (game.gameWon()) combo.pause();
         return game.gameWon() ? StepResult.WON : StepResult.COIN_EATEN;
     }
 
@@ -152,6 +176,8 @@ public final class GameSession {
             return;
         }
         obstacle.reset();
+        combo.reset();
+        openedShortcut = null;
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
         coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
         speed = game.getSpeed();
@@ -167,14 +193,36 @@ public final class GameSession {
         level = next;
         levelCoins = 0;
         combo.reset();
+        openedShortcut = null;
+        shortcuts = next.createShortcuts();
         obstacle.setLayout(next.obstaclePositions());
-        game.startLevel(obstacle.getObstacles().size());
+        obstacle.setShortcuts(getShortcuts());
+        game.startLevel(obstacle.getBlockedCells().size());
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
         if (obstacle.occupies(snake.getHead()) || snake.getBody().stream().anyMatch(obstacle::occupies)) {
             throw new IllegalStateException("Level obstacles overlap the starting snake");
         }
-        coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
+        coin = coinFactory.createCoin(game, snake, obstacle, next.preferredCoinPosition(0), true)
+                .orElseThrow(() -> new IllegalStateException("No free cell for the opening coin"));
         speed = game.getSpeed();
+    }
+
+    /** Updates collision, spawn reservations and capacity after an immutable shortcut snapshot. */
+    private void synchronizeShortcuts() {
+        obstacle.setShortcuts(getShortcuts());
+        game.updateBoardCapacity(obstacle.getBlockedCells().size());
+    }
+
+    /** @return an immutable list of independent, read-only shortcut states */
+    public List<ShortcutSnapshot> getShortcuts() { return shortcuts.stream().map(Shortcut::snapshot).toList(); }
+
+    /** @return remaining active combo time in seconds, zero when no window is active */
+    public double getComboSecondsRemaining() { return combo.secondsRemaining(); }
+
+    /** @return transient feedback text, excluding paused time, or an empty string */
+    public String getShortcutMessage() {
+        return openedShortcut != null && combo.activeTimeNanos() - openedAt < 1_500_000_000L
+                ? "Shortcut " + openedShortcut + " opened" : "";
     }
 
     /**

@@ -49,16 +49,34 @@ public enum Level {
      */
     List<Point> obstaclePositions() {
         List<Point> points = new ArrayList<>();
-        if (this == TWO) {
-            for (int y = 5; y <= 8; y++) points.add(new Point(5, y));
-            for (int y = 11; y <= 14; y++) points.add(new Point(14, y));
-        } else if (this == THREE) {
-            for (int x : new int[]{5, 14}) {
-                for (int y = 4; y <= 7; y++) points.add(new Point(x, y));
-                for (int y = 12; y <= 15; y++) points.add(new Point(x, y));
-            }
+        if (this != ONE) {
+            for (int x = 3; x <= 16; x++) if (x != 10) points.add(new Point(x, 6));
+        }
+        if (this == THREE) {
+            for (int x = 3; x <= 16; x++) if (x != 10) points.add(new Point(x, 13));
         }
         return points;
+    }
+
+    /** @return new, independent shortcut states for a fresh attempt at this level */
+    List<Shortcut> createShortcuts() {
+        return switch (this) {
+            case ONE -> List.of();
+            case TWO -> List.of(new Shortcut("A", new Point(15, 14), new Point(10, 6)));
+            case THREE -> List.of(new Shortcut("A", new Point(15, 9), new Point(10, 6)),
+                    new Shortcut("B", new Point(4, 11), new Point(10, 13)));
+        };
+    }
+
+    /**
+     * Suggests opening coin positions to demonstrate routes around the barriers.
+     * @param index zero-based coin index in this level
+     * @return a preferred cell, or null to choose a random legal cell
+     */
+    Point preferredCoinPosition(int index) {
+        if (this != ONE && index == 0) return new Point(10, 3);
+        if (this == THREE && index == 1) return new Point(10, 16);
+        return null;
     }
     /**
      * Formats the level display name.

@@ -69,7 +69,7 @@ public class MainMenuController {
         GameController controller = new GameController(session, gameView, gameStage, viewManager::showMainMenu);
 
         StackPane gamePane = new StackPane();
-        gameScene = new Scene(gamePane, game.getWidth() * game.getMultiplier(), game.getHeight() * game.getMultiplier());
+        gameScene = new Scene(gamePane, 480, 480);
 
         // Capture game shortcuts before focused controls consume keys for navigation.
         gameScene.addEventFilter(KeyEvent.KEY_PRESSED, controller::handle);
@@ -78,7 +78,7 @@ public class MainMenuController {
         gameView.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);
         gameView.attachTo(gamePane);
         gameView.updateProgress(session);
-        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
+        gameView.render(session);
     }
 
 }

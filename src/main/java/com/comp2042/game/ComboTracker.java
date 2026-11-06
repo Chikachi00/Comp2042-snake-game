@@ -49,6 +49,12 @@ final class ComboTracker {
      * @return the last bonus, or zero after expiry
      */
     int lastBonus() { return count() == 0 ? 0 : lastBonus; }
+    /** @return remaining active seconds in the current window, between zero and five */
+    double secondsRemaining() {
+        return hasCoin ? Math.max(0, WINDOW_NANOS - (activeTime() - lastCoinAt)) / 1_000_000_000.0 : 0;
+    }
+    /** @return the shared active-time clock for transient game feedback */
+    long activeTimeNanos() { return activeTime(); }
     /**
      * Freezes active time; repeated calls do not add another pause.
      */

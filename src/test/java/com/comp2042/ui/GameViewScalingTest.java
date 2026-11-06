@@ -78,7 +78,7 @@ class GameViewScalingTest extends JavaFxTestSupport {
             GameController controller = new GameController(session, board.view, stage, () -> { });
             StackPane root = new StackPane();
             board.view.attachTo(root);
-            stage.setScene(new Scene(root, 400, 400));
+            stage.setScene(new Scene(root, 480, 480));
             try {
                 stage.show();
                 WritableImage normal = board.canvas.snapshot(null, null);
@@ -94,7 +94,7 @@ class GameViewScalingTest extends JavaFxTestSupport {
                 assertEquals(400, board.canvas.getWidth());
                 assertEquals(400, board.canvas.getHeight());
                 assertEquals(1, field("fullScale").getDouble(board.view));
-                assertEquals("-fx-font-size: 15;", root.lookup("#scoreLabel").getStyle());
+                assertEquals("-fx-font-size: 20;", root.lookup("#scoreLabel").getStyle());
                 WritableImage restored = board.canvas.snapshot(null, null);
                 if (!state.equals("restarted")) assertSamePixels(normal, restored);
                 board.view.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());

@@ -35,13 +35,26 @@ final class CoinFactory {
      * @return the next coin, or an empty optional when no cell is free
      */
     Optional<Coin> createCoin(Game game, Snake snake, Obstacle obstacle) {
+        return createCoin(game, snake, obstacle, null, false);
+    }
+
+    /**
+     * Creates a coin with an optional safe placement preference and ordinary opening category.
+     * @param game game settings
+     * @param snake current snake
+     * @param obstacle walls, gates and reserved keys
+     * @param preferred desired position, or null for random placement
+     * @param ordinary whether this must be an ordinary opening coin
+     * @return the placed coin, or empty when no cell is available
+     */
+    Optional<Coin> createCoin(Game game, Snake snake, Obstacle obstacle, Point preferred, boolean ordinary) {
         Optional<Point> position = Coin.findFreePosition(game.getWidth(), game.getHeight(),
-                snake.getHead(), snake.getBody(), obstacle.getObstacles(), random);
+                snake.getHead(), snake.getBody(), obstacle.getCoinExcludedCells(), random, preferred);
         if (position.isEmpty()) {
             return Optional.empty();
         }
 
-        int roll = game.isPowerUp() ? random.nextInt(12) : 0;
+        int roll = game.isPowerUp() && !ordinary ? random.nextInt(12) : 0;
         CoinType type = selectCoinType(roll, game.isPowerUp(), !obstacle.getObstacles().isEmpty());
         Point nextPosition = position.get();
         Coin coin = switch (type) {

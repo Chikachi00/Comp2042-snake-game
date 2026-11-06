@@ -256,7 +256,7 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
         final GameSession session;
         final Stage stage = new Stage();
         final StackPane root = new StackPane();
-        final Scene scene = new Scene(root, 400, 400);
+        final Scene scene = new Scene(root, 480, 480);
         final GameController controller;
         final Timeline timer;
 

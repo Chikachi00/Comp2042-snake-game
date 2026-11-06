@@ -25,7 +25,7 @@ public class Coin {
      */
     public Coin(int x, int y, Snake snek, Obstacle obstacle) {
         this(findFreePosition(x, y, snek.getHead(), snek.getBody(),
-                obstacle.getObstacles(), new Random())
+                obstacle.getCoinExcludedCells(), new Random())
                 .orElseThrow(() -> new IllegalStateException("No free cell for a coin")));
     }
 
@@ -52,9 +52,30 @@ public class Coin {
     static Optional<Point> findFreePosition(int width, int height, Point head,
                                             Collection<Point> body, Collection<Point> obstacles,
                                             Random random) {
+        return findFreePosition(width, height, head, body, obstacles, random, null);
+    }
+
+    /**
+     * Uses a preferred free cell, falling back to uniform free-cell selection if it is unavailable.
+     * @param width board columns
+     * @param height board rows
+     * @param head snake head
+     * @param body snake body
+     * @param obstacles cells excluded from placement, including reserved keys
+     * @param random source for the fallback selection
+     * @param preferred optional preferred cell, or null
+     * @return a legal position, or empty when none exists
+     */
+    static Optional<Point> findFreePosition(int width, int height, Point head,
+                                            Collection<Point> body, Collection<Point> obstacles,
+                                            Random random, Point preferred) {
         Set<Point> occupied = new HashSet<>(body);
         occupied.add(head);
         occupied.addAll(obstacles);
+        if (preferred != null && preferred.x >= 0 && preferred.x < width
+                && preferred.y >= 0 && preferred.y < height && !occupied.contains(preferred)) {
+            return Optional.of(new Point(preferred));
+        }
 
         List<Point> freeCells = new ArrayList<>();
         for (int x = 0; x < width; x++) {

@@ -18,6 +18,9 @@ public class Obstacle {
 
     private final Color color = Color.BLACK;
     private final ArrayList<Point> obstacles = new ArrayList<>();
+    private final Set<Point> closedGates = new HashSet<>();
+    private final Set<Point> reservedKeys = new HashSet<>();
+    private final Set<Point> mechanismCells = new HashSet<>();
     private final int x;
     private final int y;
     private final Random random;
@@ -67,12 +70,13 @@ public class Obstacle {
      * @param amount requested number of additional obstacles
      */
     void newObstacles(Point snakeHead, List<Point> snakeBody, Point coinPosition, int amount) {
-        int remainingCapacity = MAX_OBSTACLES - obstacles.size();
+        int remainingCapacity = MAX_OBSTACLES - getBlockedCells().size();
         if (amount <= 0 || remainingCapacity <= 0) {
             return;
         }
 
-        Set<Point> occupied = new HashSet<>(obstacles);
+        Set<Point> occupied = new HashSet<>(getBlockedCells());
+        occupied.addAll(mechanismCells);
         occupied.add(snakeHead);
         occupied.addAll(snakeBody);
         occupied.add(coinPosition);
@@ -117,7 +121,42 @@ public class Obstacle {
      * @return whether the position is blocked
      */
     boolean occupies(Point position) {
-        return obstacles.contains(position);
+        return obstacles.contains(position) || closedGates.contains(position);
+    }
+
+    /** @return independent coordinates for walls and currently closed gates */
+    List<Point> getBlockedCells() {
+        Set<Point> blocked = new HashSet<>(obstacles);
+        blocked.addAll(closedGates);
+        return blocked.stream().map(Point::new).toList();
+    }
+
+    /** @return blocked cells and reserved uncollected keys, excluded from coin placement */
+    List<Point> getCoinExcludedCells() {
+        Set<Point> excluded = new HashSet<>(getBlockedCells());
+        excluded.addAll(reservedKeys);
+        return excluded.stream().map(Point::new).toList();
+    }
+
+    /**
+     * Synchronizes gate collision and key reservation from model snapshots.
+     * @param shortcuts immutable current shortcut states
+     */
+    void setShortcuts(List<ShortcutSnapshot> shortcuts) {
+        closedGates.clear(); reservedKeys.clear(); mechanismCells.clear();
+        for (ShortcutSnapshot shortcut : shortcuts) {
+            Point gate = new Point(shortcut.gateX(), shortcut.gateY());
+            Point key = new Point(shortcut.keyX(), shortcut.keyY());
+            if (gate.x < 0 || gate.x >= x || gate.y < 0 || gate.y >= y
+                    || key.x < 0 || key.x >= x || key.y < 0 || key.y >= y
+                    || obstacles.contains(gate) || obstacles.contains(key) || gate.equals(key)) {
+                throw new IllegalArgumentException("Invalid shortcut cells");
+            }
+            if (!mechanismCells.add(gate) || !mechanismCells.add(key)) {
+                throw new IllegalArgumentException("Shortcut positions overlap");
+            }
+            if (!shortcut.open()) { closedGates.add(gate); reservedKeys.add(key); }
+        }
     }
 
     /**
@@ -134,6 +173,7 @@ public class Obstacle {
         }
         if (unique.size() > MAX_OBSTACLES) throw new IllegalArgumentException("Too many obstacles");
         obstacles.clear();
+        closedGates.clear(); reservedKeys.clear(); mechanismCells.clear();
         positions.forEach(p -> obstacles.add(new Point(p)));
     }
 
@@ -142,5 +182,6 @@ public class Obstacle {
      */
     public void reset() {
         obstacles.clear();
+        closedGates.clear(); reservedKeys.clear(); mechanismCells.clear();
     }
 }

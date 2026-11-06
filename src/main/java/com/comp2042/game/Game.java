@@ -106,9 +106,15 @@ public class Game {
      */
     void startLevel(int fixedObstacles) {
         score = 0;
-        maxScore = width * height - 2 - fixedObstacles;
+        updateBoardCapacity(fixedObstacles);
         boardFull = false;
     }
+
+    /**
+     * Recalculates the fill threshold when a gate opens without changing earned points or coins.
+     * @param blockedCells current number of wall and closed-gate cells
+     */
+    void updateBoardCapacity(int blockedCells) { maxScore = width * height - 2 - blockedCells; }
 
     /**
      * Clears run points, collected-coin count and the win flag for a restart.

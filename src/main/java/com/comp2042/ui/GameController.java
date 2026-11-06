@@ -42,9 +42,10 @@ public class GameController {
         this.stage = stage;
         this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
         this.stage.setOnHidden(event -> animation.stop());
-        this.stage.fullScreenProperty().addListener((observable, wasFullScreen, isFullScreen) ->
-                gameView.resizeForFullscreen(isFullScreen,
-                        session.getObstacle(), session.getSnake(), session.getCoin()));
+        this.stage.fullScreenProperty().addListener((observable, wasFullScreen, isFullScreen) -> {
+            gameView.updateProgress(session);
+            gameView.resizeForFullscreen(isFullScreen, session.getObstacle(), session.getSnake(), session.getCoin());
+        });
         animation.setCycleCount(Animation.INDEFINITE);
         animation.setRate(session.getSpeed());
     }
@@ -74,13 +75,13 @@ public class GameController {
             keyPressed = false;
             gameView.resetTurns();
             gameView.showStartHint();
-            gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
+            gameView.render(session);
             gameView.updateScoreLabel();
             gameView.updateProgress(session);
             return;
         }
         if (result == GameSession.StepResult.WON) {
-            gameView.drawGrid(session.getCoin(), snake, session.getObstacle());
+            gameView.render(session);
             gameView.gameWon();
             gameView.updateScoreLabel();
             gameView.updateProgress(session);
@@ -92,7 +93,7 @@ public class GameController {
 
         keyPressed = false;
         if (!snake.getDead() || snake.hitSelf()) {
-            gameView.drawGrid(session.getCoin(), snake, session.getObstacle());
+            gameView.render(session);
         }
         gameView.gameWon();
         gameView.gameOver(snake);
@@ -222,6 +223,6 @@ public class GameController {
         gameView.gameOver(session.getSnake());
         gameView.updateScoreLabel();
         gameView.updateProgress(session);
-        gameView.drawGrid(session.getCoin(), session.getSnake(), session.getObstacle());
+        gameView.render(session);
     }
 }

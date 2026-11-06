@@ -45,14 +45,14 @@ class LevelProgressionTest {
     @Test void selectedStartingLevelAndRestartArePreserved() throws Exception {
         Game game = new Game(20, 20, false, 'N');
         GameSession session = slowSession(game, Level.TWO);
-        assertEquals(8, session.getObstacle().getObstacles().size());
+        assertEquals(13, session.getObstacle().getObstacles().size());
         for (int i = 0; i < 8; i++) eatLeft(session);
         assertEquals(Level.THREE, session.getLevel());
         session.reset();
         assertEquals(Level.TWO, session.getLevel());
         assertEquals(0, session.getLevelCoins());
         assertEquals(0, game.getScorePoints());
-        assertEquals(8, session.getObstacle().getObstacles().size());
+        assertEquals(13, session.getObstacle().getObstacles().size());
         assertFalse(session.isOver());
     }
     @Test void startingAtFinalLevelWinsAfterItsObjective() throws Exception {
@@ -65,7 +65,7 @@ class LevelProgressionTest {
     @Test void layoutsAreReachableAndDoNotCoverTheInitialSnakeOrCoin() {
         for (Level level : Level.values()) {
             GameSession session = new GameSession(new Game(20, 20, true, 'N'), level);
-            Set<Point> blocks = new HashSet<>(session.getObstacle().getObstacles());
+            Set<Point> blocks = new HashSet<>(session.getObstacle().getBlockedCells());
             Point start = session.getSnake().getHead();
             assertFalse(blocks.contains(start));
             assertTrue(session.getSnake().getBody().stream().noneMatch(blocks::contains));

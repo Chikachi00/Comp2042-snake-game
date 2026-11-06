@@ -58,3 +58,19 @@
     -fx-font-family: "SF Pixelate";
     -fx-font-size: 20;
 }
+
+.combo-timer {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+.combo-timer .track {
+    -fx-background-color: #dce2cb;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+}
+.combo-timer .bar {
+    -fx-background-color: #557849;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-padding: 0;
+}
