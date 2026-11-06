@@ -9,6 +9,7 @@ import com.comp2042.game.Snake;
 import javafx.scene.Scene;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -70,7 +71,8 @@ public class MainMenuController {
         StackPane gamePane = new StackPane();
         gameScene = new Scene(gamePane, game.getWidth() * game.getMultiplier(), game.getHeight() * game.getMultiplier());
 
-        gameScene.setOnKeyPressed(controller::handle);
+        // Capture game shortcuts before focused controls consume keys for navigation.
+        gameScene.addEventFilter(KeyEvent.KEY_PRESSED, controller::handle);
 
         gameView.makeScene(gameScene, snek, coin);
         gameView.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);

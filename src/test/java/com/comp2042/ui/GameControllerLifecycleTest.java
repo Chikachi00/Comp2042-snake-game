@@ -9,6 +9,7 @@ import com.comp2042.game.Snake;
 import javafx.animation.Animation;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -201,6 +202,53 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
         });
     }
 
+    @ParameterizedTest(name = "Tab from {1} while {0}")
+    @CsvSource({
+            "paused, resumeButton",
+            "paused, restartButton",
+            "paused, mainMenuButton",
+            "lost, restartButton",
+            "lost, mainMenuButton",
+            "won, restartButton",
+            "won, mainMenuButton"
+    })
+    void tabRestartsTheRunWhenAMenuButtonHasFocus(String state, String buttonId) throws Exception {
+        runOnFxThread(() -> {
+            try (Round round = new Round(Level.THREE)) {
+                round.stage.setScene(round.scene);
+                round.stage.show();
+                if (state.equals("paused")) {
+                    round.key(KeyCode.LEFT);
+                    round.eat(true);
+                    round.key(KeyCode.P);
+                    round.assertPauseMenu();
+                } else {
+                    round.finish(state.equals("won"));
+                }
+                Snake oldSnake = round.session.getSnake();
+                Button focusedButton = round.button(buttonId);
+                round.root.applyCss();
+                round.root.layout();
+                focusedButton.requestFocus();
+                assertSame(focusedButton, round.scene.getFocusOwner());
+
+                // Dispatch through the focused control, including its default focus-traversal behavior.
+                Event.fireEvent(focusedButton, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB,
+                        false, false, false, false));
+
+                assertNotSame(oldSnake, round.session.getSnake(), "Tab must reach the restart action");
+                assertEquals(Level.THREE, round.session.getLevel());
+                assertEquals(0, round.mainMenuVisits.get());
+                round.assertReadyWithNoScore();
+                round.key(KeyCode.UP);
+                round.putCoin(new Point(0, 0), false);
+                round.tick();
+                assertEquals(new Point(10, 9), round.session.getSnake().getHead());
+                assertEquals(Animation.Status.RUNNING, round.timer.getStatus());
+            }
+        });
+    }
+
     private static final class Round implements AutoCloseable {
         final AtomicLong clock = new AtomicLong();
         final AtomicInteger mainMenuVisits = new AtomicInteger();
@@ -220,7 +268,7 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
             GameView view = new GameView(game);
             view.makeScene(scene, session.getSnake(), session.getCoin());
             controller = new GameController(session, view, stage, mainMenuVisits::incrementAndGet);
-            scene.setOnKeyPressed(controller::handle);
+            scene.addEventFilter(KeyEvent.KEY_PRESSED, controller::handle);
             view.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);
             view.attachTo(root);
             view.updateProgress(session);
@@ -228,7 +276,8 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
         }
 
         void key(KeyCode code) {
-            scene.getOnKeyPressed().handle(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+            Event.fireEvent(scene.getFocusOwner() == null ? scene : scene.getFocusOwner(),
+                    new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
                     false, false, false, false));
         }
 
