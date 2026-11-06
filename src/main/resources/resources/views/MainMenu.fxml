@@ -5,14 +5,26 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <AnchorPane id="backgroundPane" maxHeight="400.0" maxWidth="550.0" minHeight="400.0" minWidth="550.0" prefHeight="400.0" prefWidth="550.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.comp2042.ui.MainMenuController">
     <stylesheets>
         <URL value="@styling.css" />
     </stylesheets>
     <children>
-        <Label id="title" alignment="CENTER" contentDisplay="CENTER" layoutY="110.0" prefHeight="35.0" prefWidth="550.0" text="Snake Game" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
-        <ComboBox fx:id="levelSelector" layoutX="217.5" layoutY="165.0" prefWidth="115.0" />
-        <Button fx:id="btn_start" layoutY="220.0" minHeight="40.0" minWidth="115.0" mnemonicParsing="false" onAction="#handleStart" prefHeight="40.0" prefWidth="115.0" styleClass="startAndQuitBtn" text="Start" textFill="WHITE" AnchorPane.leftAnchor="217.5" />
+        <Label id="title" alignment="CENTER" contentDisplay="CENTER" layoutY="65.0" prefHeight="50.0" prefWidth="550.0" text="Snake Game" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+        <VBox alignment="TOP_CENTER" layoutY="145.0" spacing="14.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="30.0">
+            <HBox alignment="CENTER" spacing="14.0">
+                <Label text="Mode" minWidth="72.0" style="-fx-font-size: 14;" />
+                <ComboBox fx:id="modeSelector" prefWidth="200.0" styleClass="menu-choice" />
+            </HBox>
+            <Label fx:id="modeDescription" alignment="CENTER" textAlignment="CENTER" wrapText="true" prefWidth="440.0" minHeight="38.0" style="-fx-font-size: 12; -fx-text-fill: #52604b;" />
+            <HBox fx:id="levelOptions" alignment="CENTER" spacing="14.0">
+                <Label text="Start at" minWidth="72.0" style="-fx-font-size: 14;" />
+                <ComboBox fx:id="levelSelector" prefWidth="200.0" styleClass="menu-choice" />
+            </HBox>
+        </VBox>
+        <Button fx:id="btn_start" layoutY="310.0" minHeight="40.0" minWidth="115.0" mnemonicParsing="false" onAction="#handleStart" prefHeight="40.0" prefWidth="115.0" styleClass="startAndQuitBtn" text="Start" textFill="WHITE" AnchorPane.leftAnchor="217.5" />
     </children>
 </AnchorPane>

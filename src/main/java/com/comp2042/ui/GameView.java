@@ -445,16 +445,20 @@ public class GameView {
         if (session.getLevel() != null) {
             progressLabel.setText(session.getLevel() + "  |  Coins: " + session.getLevelCoins()
                     + "/" + session.getLevel().target());
+        } else {
+            progressLabel.setText(session.getMode().toString());
         }
         int count = session.getComboCount();
-        comboLabel.setText(count == 0 ? "" : "Combo x" + count + " (+" + session.getComboBonus() + ")");
+        comboLabel.setText(session.getMode() == GameMode.ENDLESS ? "Classic survival"
+                : count == 0 ? "" : "Combo x" + count + " (+" + session.getComboBonus() + ")");
         double remaining = session.getComboSecondsRemaining();
         comboBar.setProgress(remaining / 5.0); comboBar.setVisible(count > 0);
         comboTime.setText(count == 0 ? "" : String.format(Locale.ROOT, "%.1fs", remaining));
         shortcutStatus.setText(shortcuts.stream().map(s -> s.id() + ": "
                 + (s.open() ? "Open" : s.keyAvailable() ? "Key ready" : "Locked")).collect(Collectors.joining("  |  ")));
         noticeLabel.setText(session.getShortcutMessage());
-        if (shortcuts.isEmpty()) ruleHint.setText("Eat coins within 5 seconds to keep your combo.");
+        if (session.getMode() == GameMode.ENDLESS) ruleHint.setText("Collect coins. Avoid walls and your own tail.");
+        else if (shortcuts.isEmpty()) ruleHint.setText("Eat coins within 5 seconds to keep your combo.");
         else if (session.getLevelCoins() == 0) ruleHint.setText("Collect 1 coin to reveal keys. Gates are optional.");
         else if (shortcuts.stream().allMatch(ShortcutSnapshot::open)) ruleHint.setText("Shortcuts open. Keep your combo going.");
         else ruleHint.setText("Match keys to gates. You can always go around.");

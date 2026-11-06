@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.List;
 
 /**
- * Coordinates movement, coins, scoring and level progression independently of the UI timer.
+ * Coordinates endless survival or progressive levels independently of the UI timer.
  */
 public final class GameSession {
     /** Describes the outcome of one session advance. */
@@ -41,6 +41,30 @@ public final class GameSession {
     private long openedAt;
 
     /**
+     * Starts an endless round with the original special-coin and board-fill rules.
+     * There are no level targets, keys or combo bonuses in this mode.
+     *
+     * @param game board settings and score state
+     */
+    public GameSession(Game game) {
+        this(game, System::nanoTime);
+        reset();
+    }
+
+    /**
+     * Initializes common services for a fresh round of either mode.
+     * @param game board settings and score state
+     * @param clock monotonic clock returning nanoseconds
+     */
+    private GameSession(Game game, java.util.function.LongSupplier clock) {
+        this.game = java.util.Objects.requireNonNull(game, "game");
+        this.obstacle = new Obstacle(game.getWidth(), game.getHeight());
+        this.coinFactory = new CoinFactory();
+        this.coinEffects = new CoinEffectService();
+        this.combo = new ComboTracker(clock);
+    }
+
+    /**
      * Creates a legacy round with supplied game objects and default coin services.
      *
      * @param game game settings and score state
@@ -70,14 +94,10 @@ public final class GameSession {
      * @param clock monotonic clock returning nanoseconds
      */
     GameSession(Game game, Level startingLevel, java.util.function.LongSupplier clock) {
+        this(game, clock);
         if (game.getWidth() != 20 || game.getHeight() != 20) {
             throw new IllegalArgumentException("Levels require a 20 by 20 board");
         }
-        this.game = game;
-        this.obstacle = new Obstacle(game.getWidth(), game.getHeight());
-        this.coinFactory = new CoinFactory();
-        this.coinEffects = new CoinEffectService();
-        this.combo = new ComboTracker(clock);
         this.startingLevel = java.util.Objects.requireNonNull(startingLevel, "startingLevel");
         initializeLevel(startingLevel);
     }
@@ -167,7 +187,7 @@ public final class GameSession {
     }
 
     /**
-     * Restarts from the selected starting level with zero run points, or resets a legacy round.
+     * Restarts the same mode with zero points, restoring its selected starting level if present.
      */
     public void reset() {
         if (startingLevel != null) {
@@ -177,6 +197,8 @@ public final class GameSession {
         }
         obstacle.reset();
         combo.reset();
+        levelCoins = 0;
+        shortcuts = List.of();
         openedShortcut = null;
         snake = new Snake(game.getWidth(), game.getHeight(), game.isNoBorder(), obstacle);
         coin = new Coin(game.getWidth(), game.getHeight(), snake, obstacle);
@@ -246,10 +268,13 @@ public final class GameSession {
      */
     public int getComboBonus() { return combo.lastBonus(); }
 
+    /** @return endless survival when no level is configured, otherwise the challenge mode */
+    public GameMode getMode() { return level == null ? GameMode.ENDLESS : GameMode.CHALLENGE; }
+
     /**
      * Returns the currently active level.
      *
-     * @return the active level, or null for a legacy round
+     * @return the active level, or null for endless survival
      */
     public Level getLevel() { return level; }
     /**

@@ -2,6 +2,11 @@
     -fx-background-color: White;
 }
 
+.menu-choice .list-cell {
+    -fx-font-family: "SF Pixelate";
+    -fx-font-size: 14;
+}
+
 .button {
     -fx-font-family: "SF Pixelate";
     -fx-font-size: 18;
