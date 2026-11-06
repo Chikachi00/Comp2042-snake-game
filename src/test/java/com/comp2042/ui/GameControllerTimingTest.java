@@ -8,45 +8,23 @@ import com.comp2042.game.Level;
 import com.comp2042.game.RainbowCoin;
 import javafx.animation.Animation;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.awt.Point;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Exercises level transitions through the actual JavaFX timer callback. */
-class GameControllerTimingTest {
-    @BeforeAll
-    static void startJavaFx() throws Exception {
-        CountDownLatch ready = new CountDownLatch(1);
-        Runnable initialize = () -> {
-            Platform.setImplicitExit(false);
-            ready.countDown();
-        };
-        try {
-            Platform.startup(initialize);
-        } catch (IllegalStateException alreadyStarted) {
-            Platform.runLater(initialize);
-        }
-        assertTrue(ready.await(10, TimeUnit.SECONDS), "JavaFX startup timed out");
-    }
-
+class GameControllerTimingTest extends JavaFxTestSupport {
     @ParameterizedTest(name = "{0}: last coin rainbow={1}")
     @CsvSource({"ONE, false", "ONE, true", "TWO, false", "TWO, true"})
     void nextLevelRestoresTimerSpeedAfterRainbow(Level startingLevel, boolean rainbowLast) throws Exception {
@@ -111,25 +89,5 @@ class GameControllerTimingTest {
 
     private static void tick(Timeline timer) {
         timer.getKeyFrames().get(0).getOnFinished().handle(new ActionEvent());
-    }
-
-    private static void runOnFxThread(CheckedAction action) throws Exception {
-        FutureTask<Void> task = new FutureTask<>(() -> {
-            action.run();
-            return null;
-        });
-        Platform.runLater(task);
-        try {
-            task.get(10, TimeUnit.SECONDS);
-        } catch (ExecutionException failure) {
-            if (failure.getCause() instanceof AssertionError assertion) throw assertion;
-            if (failure.getCause() instanceof Exception exception) throw exception;
-            throw failure;
-        }
-    }
-
-    @FunctionalInterface
-    private interface CheckedAction {
-        void run() throws Exception;
     }
 }

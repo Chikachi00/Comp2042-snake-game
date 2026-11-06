@@ -5,14 +5,12 @@ import com.comp2042.game.Direction;
 import com.comp2042.game.Game;
 import com.comp2042.game.Obstacle;
 import com.comp2042.game.Snake;
-import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -20,31 +18,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.awt.Point;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Checks the rendered sprites, including straight, corner and tail segments. */
-class GameViewScalingTest {
-    @BeforeAll
-    static void startJavaFx() throws Exception {
-        CountDownLatch ready = new CountDownLatch(1);
-        Runnable initialize = () -> {
-            Platform.setImplicitExit(false);
-            ready.countDown();
-        };
-        try {
-            Platform.startup(initialize);
-        } catch (IllegalStateException alreadyStarted) {
-            Platform.runLater(initialize);
-        }
-        assertTrue(ready.await(10, TimeUnit.SECONDS), "JavaFX startup timed out");
-    }
-
+class GameViewScalingTest extends JavaFxTestSupport {
     @ParameterizedTest(name = "scale={0}, corner={1}")
     @CsvSource({"1.5, false", "2.0, false", "1.5, true", "2.0, true"})
     void snakeSpritesScaleWithTheBoard(double scale, boolean corner) throws Exception {
@@ -164,25 +143,5 @@ class GameViewScalingTest {
         return field;
     }
 
-    private static void runOnFxThread(CheckedAction action) throws Exception {
-        FutureTask<Void> task = new FutureTask<>(() -> {
-            action.run();
-            return null;
-        });
-        Platform.runLater(task);
-        try {
-            task.get(10, TimeUnit.SECONDS);
-        } catch (ExecutionException failure) {
-            if (failure.getCause() instanceof AssertionError assertion) throw assertion;
-            if (failure.getCause() instanceof Exception exception) throw exception;
-            throw failure;
-        }
-    }
-
     private record Board(GameView view, Canvas canvas, Snake snake, Coin coin, Obstacle obstacle) { }
-
-    @FunctionalInterface
-    private interface CheckedAction {
-        void run() throws Exception;
-    }
 }
