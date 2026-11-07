@@ -1,6 +1,6 @@
 # COMP2042 submission checklist
 
-Documentation status reviewed on 7 November 2026 for `feature/gameplay-enhancements`. The latest automated build below was run on 7 November 2026.
+Documentation status reviewed on 7 November 2026 for `main`, after gameplay pull request #3 was merged as `ee936ed`. The latest automated build below was run on 7 November 2026 before the merge; the merge retained the same production and test source.
 
 ## Prepared materials
 
@@ -14,8 +14,13 @@ Documentation status reviewed on 7 November 2026 for `feature/gameplay-enhanceme
 - [x] Endless/Challenge mode selection is implemented; mode-specific rules, original endless scoring/effects and menu navigation have twelve additional automated cases.
 - [x] Independent persistent personal bests for both modes have sixteen additional storage/controller/menu cases, including failure recovery and challenge totals.
 - [x] AI assistance is acknowledged in the README. The separate usage log is held locally for review and updating.
+- [x] The student reported local play-testing with no issues on 7 November 2026.
+- [x] The accidental terminal-help file was removed in `cf22eb3`; generated documentation, build output and personal score records are outside tracked project content.
+- [x] Gameplay pull request #3 was merged into `main`, the local `main` was synchronized, and the README now describes cloning `main`.
 
 ## Student review and manual verification
+
+Local play-testing has been reported complete. The scenario boxes below identify coverage still to be confirmed from that play-test; checks already performed do not need to be repeated. Another-computer validation remains separate and has not been reported complete.
 
 - [ ] Play Endless beyond ten coins, check original special-coin effects, restart it, and return to the menu to switch to Challenge.
 - [ ] Set a record in each mode, close and reopen the game, and check Best in the main menu, HUD and final-score overlay; verify restart keeps it.
@@ -30,7 +35,6 @@ Documentation status reviewed on 7 November 2026 for `feature/gameplay-enhanceme
 - [ ] Review the AI log against the actual conversations, add any missing assistance, enter student details and sign it.
 - [ ] Complete the official COMP2042 AI Use Declaration Form required by the module. The usage log is supplementary.
 - [ ] Confirm the assessor can access the GitHub repository; if it is private, add `kooitt` as required by the brief.
-- [ ] Review and merge the gameplay branch into `main`, update README branch/clone instructions for the final repository state, then synchronize and verify the final version.
 
 ## Video and final packaging
 

@@ -6,7 +6,7 @@ A maintained JavaFX Snake game based on the COMP2042 starter project. The main m
 
 Repository: <https://github.com/Chikachi00/Comp2042-snake-game>
 
-Original project: <https://github.com/kooitt/CW2026>. The original commit history is retained. Maintenance, refactoring and gameplay additions are recorded in separate commits and branches. The gameplay work is currently on `feature/gameplay-enhancements`; this README does not imply that it has already been merged into `main`.
+Original project: <https://github.com/kooitt/CW2026>. The original commit history is retained. Maintenance, refactoring and gameplay additions are recorded in separate commits and branches. The gameplay enhancements were merged from `feature/gameplay-enhancements` into `main` through [pull request #3](https://github.com/Chikachi00/Comp2042-snake-game/pull/3) on 7 November 2026. The `main` branch contains the current playable version.
 
 ## 2. Compilation Instructions
 
@@ -19,10 +19,10 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
 
 ### Build and run
 
-1. Clone the gameplay branch and enter the repository. These instructions use `feature/gameplay-enhancements` while its changes are awaiting merge into `main`:
+1. Clone the current `main` branch and enter the repository:
 
    ```cmd
-   git clone --branch feature/gameplay-enhancements https://github.com/Chikachi00/Comp2042-snake-game.git
+   git clone --branch main https://github.com/Chikachi00/Comp2042-snake-game.git
    cd Comp2042-snake-game
    ```
 
@@ -70,7 +70,7 @@ The tracked [generation script](scripts/generate-javadoc.ps1) reads the JavaFX v
 
 ## 3. Implemented and Working Properly
 
-The following behaviors are covered by the automated checks described below. Final human play-testing is still required.
+The following behaviors are covered by the automated checks described below. The student also reported local play-testing with no issues on 7 November 2026; detailed scenario coverage and another-computer validation are tracked separately in the submission checklist.
 
 | Feature | Behavior and implementation location |
 | --- | --- |
@@ -114,13 +114,13 @@ Separate local checks confirmed that fullscreen exit restores a `480 x 480` scen
 
 No failing gameplay behavior is currently known from the automated scenarios above. This is a bounded verification result rather than a claim that the game has no remaining defects.
 
-The previously identified fullscreen-restoration, focused-button `Tab`, font-loading and FXML-version issues have been fixed and are covered by the checks above. Final human play-testing of each level, controls, menu layout and fullscreen entry/exit remains pending, as does validation on another computer.
+The previously identified fullscreen-restoration, focused-button `Tab`, font-loading and FXML-version issues have been fixed and are covered by the checks above. The student reported successful local play-testing on 7 November 2026. Confirmation of the individual manual scenarios in the submission checklist and validation on another computer remain outstanding.
 
 ## 5. Features Not Implemented
 
 All gameplay features in the agreed extension plans have implementations: selectable Endless/Challenge modes, pause/end menus, three selectable progressive levels, combo scoring with a countdown, optional key-operated shortcuts, and persistent personal bests for both modes. No agreed gameplay feature was intentionally left out. Optional ideas outside those plans, such as selectable difficulty, were not added so that development could focus on the implemented run and its verification.
 
-Submission tasks remain: final human play-testing, another-computer validation, the student's AI declaration and the demonstration video. They are recorded as pending rather than presented as implemented game features.
+Submission tasks remain: confirmation of manual scenario coverage, another-computer validation, final design review, the student's AI declaration and the demonstration video. They are recorded as pending rather than presented as implemented game features.
 
 ## 6. New Java Classes
 
