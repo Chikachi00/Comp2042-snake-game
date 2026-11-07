@@ -12,6 +12,8 @@ if ($jars.Count -eq 0) {
 }
 $javadoc = (Get-Command javadoc -ErrorAction Stop).Source
 $arguments = @(
+    '-locale', 'en',
+    '-J-Duser.language=en', '-J-Duser.country=GB',
     '-quiet', '-notimestamp', '-private', '-Xdoclint:all,-missing', '-Werror',
     '-encoding', 'UTF-8', '-docencoding', 'UTF-8', '-charset', 'UTF-8',
     '-doctitle', 'COMP2042 Snake Game', '-windowtitle', 'COMP2042 Snake Game',

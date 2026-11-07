@@ -2,12 +2,15 @@
 
 Documentation status reviewed on 7 November 2026 for `main`, after gameplay pull request #3 was merged as `ee936ed`. The latest automated build below was run on 7 November 2026 before the merge; the merge retained the same production and test source.
 
+The README, final class diagram and generated Javadoc have been aligned with this production code. The only Java source edit during documentation finalization adds comments for the three shortcut states; executable game logic, resources and tests are unchanged. Documentation finalization does not mark the remaining human checks or final submission as complete.
+
 ## Prepared materials
 
 - [x] README follows the eight required sections and identifies new and modified classes.
 - [x] Production source has class and method Javadoc, including parameters and return values.
-- [x] The Javadoc generation script is tracked. Generated `Javadoc/` is local and ignored by Git; a fresh clone must generate it before final packaging.
-- [x] A local `Design.pdf` draft and `docs/build_design.py` generator are available; both remain uncommitted while the design material is being reviewed.
+- [x] `Javadoc/` was regenerated from the final production source with JDK 21.0.11 on 7 November 2026. The generation script fixes navigation to English and passed its Javadoc markup checks without warnings. Generated HTML is local and ignored by Git; a fresh clone must generate it before final packaging.
+- [x] Javadoc coverage matches all 29 production types and four packages. Declared methods/constructors and applicable parameter/return sections were checked. All 2,909 local HTML links and asset references resolved, including member anchors; offline browser navigation and representative pages were visually checked.
+- [x] The final `Design.pdf` covers 26 top-level production types and three nested enums across three A3 landscape views. Source inventory, selected retained references, inheritance and layout were checked, and all pages were rendered and visually reviewed. `docs/build_design.py` regenerates the PDF and checks the documented structure against the source.
 - [x] Automated verification: 239 JUnit test invocations passed with no failures, errors or skips in the latest clean Maven package build.
 - [x] Fullscreen restoration, focused-button `Tab`, pixel-font loading and the FXML version warning have regression coverage. The packaged JAR was also checked for the original fonts.
 - [x] Optional shortcuts and the countdown are implemented and covered, including complete automated runs from all three starting levels with all keys and without any keys. Actual scene previews and native fullscreen restoration were checked.
@@ -29,9 +32,7 @@ Local play-testing has been reported complete. The scenario boxes below identify
 - [ ] Check `P`, `Esc`, `Tab` and every pause/end-menu button.
 - [ ] Check native fullscreen entry and exit, pause layout and fonts on the intended display.
 - [ ] Build and play the final version on another computer. Record the OS, JDK, build command and result; this has not yet been done.
-- [ ] Read the implementation and prepare to explain movement, effect replacement, progression, combo timing and tests.
-- [ ] Update the local design draft for `HighScoreStore`, `GameMode`, `Shortcut` and `ShortcutSnapshot`, then review it against the final code and finalize `Design.pdf` for submission, showing the required relationships and multiplicities.
-- [ ] Regenerate `Javadoc/` from the final source using `scripts/generate-javadoc.ps1` and check the generated pages. Older local HTML must not be treated as current after code changes.
+- [ ] Read the implementation and final diagram; prepare to explain movement, effect replacement, progression, combo timing, tests, relationships, ownership and multiplicities during Q&A.
 - [ ] Review the AI log against the actual conversations, add any missing assistance, enter student details and sign it.
 - [ ] Complete the official COMP2042 AI Use Declaration Form required by the module. The usage log is supplementary.
 - [ ] Confirm the assessor can access the GitHub repository; if it is private, add `kooitt` as required by the brief.

@@ -66,7 +66,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\generate-javadoc.ps1
 start "" "Javadoc\index.html"
 ```
 
-The tracked [generation script](scripts/generate-javadoc.ps1) reads the JavaFX version from the POM and uses dependencies in the local Maven cache. It includes package-visible implementation classes and private methods, and validates Javadoc markup. Documentation for a method includes its purpose, parameters and return value where applicable. After generation, `Javadoc/index.html` is the local entry page; copy the whole `Javadoc` folder into the final submission. Generated HTML does not need to be committed to GitHub.
+The tracked [generation script](scripts/generate-javadoc.ps1) reads the JavaFX version from the POM and uses dependencies in the local Maven cache. It generates English navigation regardless of the operating system's language, includes package-visible implementation classes and private methods, and treats Javadoc markup warnings as errors. Documentation for a method includes its purpose, parameters and return value where applicable. After generation, `Javadoc/index.html` is the local entry page; copy the whole `Javadoc` folder into the final submission. Generated HTML does not need to be committed to GitHub.
 
 ## 3. Implemented and Working Properly
 
@@ -120,7 +120,7 @@ The previously identified fullscreen-restoration, focused-button `Tab`, font-loa
 
 All gameplay features in the agreed extension plans have implementations: selectable Endless/Challenge modes, pause/end menus, three selectable progressive levels, combo scoring with a countdown, optional key-operated shortcuts, and persistent personal bests for both modes. No agreed gameplay feature was intentionally left out. Optional ideas outside those plans, such as selectable difficulty, were not added so that development could focus on the implemented run and its verification.
 
-Submission tasks remain: confirmation of manual scenario coverage, another-computer validation, final design review, the student's AI declaration and the demonstration video. They are recorded as pending rather than presented as implemented game features.
+Submission tasks remain: confirmation of manual scenario coverage, another-computer validation, the student's AI declaration, the demonstration video and final packaging. Their status is recorded in the submission checklist.
 
 ## 6. New Java Classes
 
@@ -222,13 +222,15 @@ Level configuration also defines the first coin of levels 2/3 at `(10,3)` and th
 | Pixel-font Main Menu button text was truncated | Use an explicit 14px game-menu button font inside the original button image; rendered-control assertions verify the full label. | `ui/GameView.java`, `ui/GameViewShortcutTest.java` in test sources |
 | FXML namespace version warning | Changed the namespace from JavaFX 26 to 21 to match the supported runtime; the real menu integration check loads without this warning. | `src/main/resources/resources/views/MainMenu.fxml`, `ui/ViewManagerResourcesTest.java` in test sources |
 
-The model still stores JavaFX colors, and final-level victory currently uses the legacy `markBoardFull()` win flag. These are maintainability limitations, not separately verified gameplay failures. Final design and Javadoc materials should describe the actual implementation.
+The model still stores JavaFX colors, and final-level victory currently uses the legacy `markBoardFull()` win flag. These are maintainability limitations, not separately verified gameplay failures. The final class diagram and Javadoc describe the existing implementation.
 
 ## Documentation and submission materials
 
-- `Design.pdf` and its generator, `docs/build_design.py`, are local drafts and have not been committed to this repository. Update the draft for `HighScoreStore`, `GameMode`, `Shortcut`, `ShortcutSnapshot` and their relationships, then review the diagram against the final production classes, relationships and multiplicities before including the finished PDF in the final submission. It should omit attributes and methods unless needed to explain the design.
-- `Javadoc/` is generated locally using the tracked [generation script](scripts/generate-javadoc.ps1) and is ignored by Git. Follow the generation commands above to create it after cloning, then include the resulting folder in the final submission. Test-only fixtures are excluded from the production diagram and API pages.
+- [Design.pdf](Design.pdf) covers all 26 top-level production types and three nested enums across three A3 landscape views: application/UI/persistence, session/movement/shortcuts, and coin construction/inheritance. It includes mode, personal-record and shortcut types; distinguishes retained references, ownership, dependencies and inheritance; and labels target multiplicities. Attributes and methods are omitted. All three pages have been rendered and visually checked against the final code. Include this PDF in the final submission.
+- [docs/build_design.py](docs/build_design.py) regenerates the diagram and checks the source inventory, selected retained-reference types, inheritance and connector geometry. The generator requires Python with `reportlab`; run `python docs/build_design.py` from the project folder. Java compilation and gameplay do not require Python. Regenerate and review the PDF if the production structure changes.
+- `Javadoc/` was regenerated from the final production source on 7 November 2026 using JDK 21.0.11. It includes all 29 production type pages (26 top-level types and three nested enums) and four package summaries. Generated documentation is local and ignored by Git. Follow the generation commands above after cloning, then include the whole resulting folder in the final submission. Test-only fixtures are excluded from the production diagram and API pages.
+- Final documentation checks confirmed the type/package coverage, descriptions of declared methods and constructors, and parameter/return sections where applicable. All 2,909 local HTML links and asset references resolved, including member anchors. The overview, game-session, movement-method and personal-record pages were also checked in a browser with offline navigation. The three shortcut states have explanatory source comments; this documentation update does not change executable game logic.
 - [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) records completed materials and the remaining manual checks.
 - Generative AI assisted debugging, refactoring, implementation, testing and documentation. The separate `AI_Usage_Log.docx` is held locally and is not part of this repository. The student must review and update it to reflect the actual assistance, and complete the official COMP2042 AI Use Declaration Form. The log does not replace that form.
 
-The final submission folder must contain `README.md`, `Design.pdf`, `Javadoc`, the student's own-voice demonstration video and the complete project ZIP. Final packaging and submission are pending the manual checks and student details.
+The README, final class diagram and generated Javadoc are prepared for the current production code. The final submission folder must contain `README.md`, `Design.pdf`, `Javadoc`, the student's own-voice demonstration video and the complete project ZIP. Final packaging and submission remain pending the manual checks, video, AI declaration and student details listed in the checklist.

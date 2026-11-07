@@ -5,7 +5,15 @@ import java.util.Objects;
 
 /** Owns the one-way hidden-key, available-key and open-gate lifecycle of a shortcut. */
 final class Shortcut {
-    private enum State { HIDDEN, AVAILABLE, OPEN }
+    /** Tracks whether the matching key is hidden, collectible or already used. */
+    private enum State {
+        /** The gate is closed and its key has not appeared yet. */
+        HIDDEN,
+        /** The key is visible and can be collected to open the gate. */
+        AVAILABLE,
+        /** The key has been collected and the gate stays open for this level. */
+        OPEN
+    }
     private final String id;
     private final Point key;
     private final Point gate;
