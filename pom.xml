@@ -12,9 +12,9 @@
     <name>Advanced Snake (JavaFX)</name>
 
     <properties>
-        <maven.compiler.release>21</maven.compiler.release>
+        <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javafx.version>21.0.13</javafx.version>
+        <javafx.version>25.0.5</javafx.version>
         <junit.version>5.12.2</junit.version>
         <!-- Main class (package "resources" matches the original project layout) -->
         <mainClass>com.comp2042.Main</mainClass>

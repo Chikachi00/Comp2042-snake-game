@@ -1,17 +1,18 @@
 # COMP2042 submission checklist
 
-Documentation status reviewed on 7 November 2026 for `main`, after gameplay pull request #3 was merged as `ee936ed`. The latest automated build below was run on 7 November 2026 before the merge; the merge retained the same production and test source.
+Documentation status reviewed on 8 November 2026 for the working tree based on `main`. The latest clean package build used Oracle JDK 27.0.1.0.3, JavaFX 25.0.5 and a Java 25 compilation target after the runtime upgrade.
 
-The README, final class diagram and generated Javadoc have been aligned with this production code. The only Java source edit during documentation finalization adds comments for the three shortcut states; executable game logic, resources and tests are unchanged. Documentation finalization does not mark the remaining human checks or final submission as complete.
+The README, final class diagram and generated Javadoc have been aligned with this production code. The earlier documentation update added comments for the three shortcut states. This runtime upgrade changes the build versions and FXML namespace; executable game rules and tests are unchanged. Documentation finalization does not mark the remaining human checks or final submission as complete.
 
 ## Prepared materials
 
 - [x] README follows the eight required sections and identifies new and modified classes.
 - [x] Production source has class and method Javadoc, including parameters and return values.
-- [x] `Javadoc/` was regenerated from the final production source with JDK 21.0.11 on 7 November 2026. The generation script fixes navigation to English and passed its Javadoc markup checks without warnings. Generated HTML is local and ignored by Git; a fresh clone must generate it before final packaging.
-- [x] Javadoc coverage matches all 29 production types and four packages. Declared methods/constructors and applicable parameter/return sections were checked. All 2,909 local HTML links and asset references resolved, including member anchors; offline browser navigation and representative pages were visually checked.
+- [x] `Javadoc/` was regenerated from the final production source with JDK 27.0.1.0.3 and JavaFX 25.0.5 on 8 November 2026. The generation script fixes navigation to English and passed its Javadoc markup checks without warnings. Generated HTML is local and ignored by Git; a fresh clone must generate it before final packaging.
+- [x] Javadoc coverage matches all 29 production types and four packages. Declared methods/constructors and applicable parameter/return sections were checked. All 3,266 local HTML links and asset references resolved, including member anchors; offline browser navigation and representative pages were visually checked.
 - [x] The final `Design.pdf` covers 26 top-level production types and three nested enums across three A3 landscape views. Source inventory, selected retained references, inheritance and layout were checked, and all pages were rendered and visually reviewed. `docs/build_design.py` regenerates the PDF and checks the documented structure against the source.
-- [x] Automated verification: 239 JUnit test invocations passed with no failures, errors or skips in the latest clean Maven package build.
+- [x] Automated verification: 239 JUnit test invocations passed with no failures, errors or skips in the clean Maven package build on JDK 27 / JavaFX 25.0.5.
+- [x] The actual packaged `Main` launcher reported Java 27.0.1.0.3 and JavaFX 25.0.5+1. Challenge level selection, pixel fonts, 480 x 480 windowed dimensions, pause and `Tab` restart passed programmatic checks.
 - [x] Fullscreen restoration, focused-button `Tab`, pixel-font loading and the FXML version warning have regression coverage. The packaged JAR was also checked for the original fonts.
 - [x] Optional shortcuts and the countdown are implemented and covered, including complete automated runs from all three starting levels with all keys and without any keys. Actual scene previews and native fullscreen restoration were checked.
 - [x] Endless/Challenge mode selection is implemented; mode-specific rules, original endless scoring/effects and menu navigation have twelve additional automated cases.
@@ -23,7 +24,7 @@ The README, final class diagram and generated Javadoc have been aligned with thi
 
 ## Student review and manual verification
 
-Local play-testing has been reported complete. The scenario boxes below identify coverage still to be confirmed from that play-test; checks already performed do not need to be repeated. Another-computer validation remains separate and has not been reported complete.
+Local play-testing was reported complete on 7 November, before the JDK/JavaFX upgrade. Confirm the scenarios below on the upgraded runtime; this can be a brief regression play-test. Another-computer validation remains separate and has not been reported complete.
 
 - [ ] Play Endless beyond ten coins, check original special-coin effects, restart it, and return to the menu to switch to Challenge.
 - [ ] Set a record in each mode, close and reopen the game, and check Best in the main menu, HUD and final-score overlay; verify restart keeps it.

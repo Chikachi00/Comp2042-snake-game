@@ -12,10 +12,10 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
 
 ### Requirements
 
-- JDK 21, including `java`, `javac` and `javadoc` on `PATH`.
+- JDK 25 or later, including `java`, `javac` and `javadoc` on `PATH`. The compiler targets Java 25; the locally tested build uses JDK 27.
 - Internet access for the first Maven dependency download. A separate Maven installation is unnecessary because the project includes the Maven wrapper.
-- JavaFX 21.0.13 and JUnit 5.12.2 are declared in `pom.xml` and resolved by Maven.
-- The commands below use Windows Command Prompt and run from the folder containing `pom.xml` and `mvnw.cmd`. The locally verified environment is Windows with Eclipse Temurin JDK 21.0.11.
+- JavaFX 25.0.5 and JUnit 5.12.2 are declared in `pom.xml` and resolved by Maven. A separate JavaFX SDK installation is unnecessary.
+- The commands below use Windows Command Prompt and run from the folder containing `pom.xml` and `mvnw.cmd`. The locally verified environment is Windows 11 x64 with Oracle JDK 27.0.1.0.3.
 
 ### Build and run
 
@@ -26,11 +26,12 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
    cd Comp2042-snake-game
    ```
 
-2. Check that the active JDK is version 21:
+2. Check that Java, the compiler and Maven all use JDK 25 or later (the recorded local checks use JDK 27):
 
    ```cmd
    java -version
    javac -version
+   mvnw.cmd -v
    ```
 
 3. Compile and run the tests:
@@ -49,8 +50,10 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
 
    ```cmd
    mvnw.cmd clean package
-   java -jar target\snake-javafx.jar
+   java --enable-native-access=ALL-UNNAMED -jar target\snake-javafx.jar
    ```
+
+If several JDKs are installed, set `JAVA_HOME` to the chosen JDK root and put its `bin` directory first on `PATH`; select the same JDK for the IDE project. The compiler release setting does not install or select a JDK. JDK 21 cannot build or run this upgraded version.
 
 The IDE entry point is `com.comp2042.Main`. This ordinary Java launcher explicitly starts `SnakeApplication`, avoiding the JavaFX-subclass classpath-launch error encountered earlier. Import the folder containing `pom.xml` as a Maven project rather than opening only an individual Java file.
 
@@ -86,7 +89,7 @@ The following behaviors are covered by the automated checks described below. The
 | Sequential progression | Reaching a target creates a fresh snake and level layout, clears effects and combo, retains run points and waits for an arrow key. Completing level 3 shows the final score. `game/GameSession.java` controls progression. |
 | Combo scoring (Challenge) | A pickup within five active seconds of the previous pickup continues the combo. Bonuses are 0, 2, 4, 6, 8, 10, then 10 points per pickup. Exactly five seconds qualifies; five seconds plus one nanosecond expires it. Pauses are excluded; level changes and restarts clear it. The HUD displays remaining seconds and a progress bar from the same clock. |
 | Fullscreen drawing | `+` enters fullscreen and `-` restores windowed dimensions while the round is ready or running and unpaused. Window fullscreen-state changes also restore the canvas, scale and label sizes, including while paused or after restarting. Snake sprites, keys and gates share one scale factor. Both modes use a 480 x 480 windowed scene, containing a 400 x 400 board and separate HUD/footer; fullscreen fits the square board inside the space remaining after those regions. |
-| Original interface fonts | The original regular and shaded pixel-font files and the main-menu title/Start sizes are retained. The game HUD and menu buttons use explicit sizes that fit their allocated space. Resource-stream loading supports project paths containing spaces and packaged JARs. The menu FXML uses a JavaFX 21 namespace compatible with the runtime. |
+| Original interface fonts | The original regular and shaded pixel-font files and the main-menu title/Start sizes are retained. The game HUD and menu buttons use explicit sizes that fit their allocated space. Resource-stream loading supports project paths containing spaces and packaged JARs. The menu FXML uses a JavaFX 25 namespace compatible with the runtime. |
 | Personal bests | `persistence/HighScoreStore.java` saves independent Endless and Challenge records. A strict improvement is saved immediately, including partial runs; equal/lower scores leave it unchanged. The selected mode's Best appears in the main menu, HUD and final-score overlay, with a New high score message for a record-breaking run. Restart clears only the current score. |
 | End state | Collision and victory stop the timer and present Restart and Main Menu actions. Movement and pause keys cannot restart an ended round. |
 
@@ -104,11 +107,13 @@ Choose Endless or Challenge in the main menu. Endless uses the original survival
 
 ### Verification
 
-The latest clean Maven package build, run on 7 November 2026, passed **239 JUnit test invocations with zero failures, errors or skips**. This includes 22 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios, eight sprite-scaling/fullscreen-restoration scenarios and one menu/game font-resource integration test. New shortcut coverage adds two lifecycle/encapsulation cases, eighteen gameplay cases and one rendered HUD/gate case. The gameplay cases include six complete model-driven runs: each starting level with every key collected and with every key avoided. Twelve mode cases additionally cover endless play beyond all challenge targets, unchanged values/effects for all five coin categories, reset behavior, mode switching and real-menu start/restart/navigation at every challenge starting level. Sixteen personal-best cases cover persistence across store reloads, mode isolation, ties/lower scores, malformed values, write-failure recovery, live HUD updates, restart, loss/victory overlays, cumulative challenge points and real-menu refresh. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
+The latest clean Maven package build, run on 8 November 2026 with Oracle JDK 27.0.1.0.3 and JavaFX 25.0.5 (Java 25 compilation target), passed **239 JUnit test invocations with zero failures, errors or skips**. This includes 22 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios, eight sprite-scaling/fullscreen-restoration scenarios and one menu/game font-resource integration test. New shortcut coverage adds two lifecycle/encapsulation cases, eighteen gameplay cases and one rendered HUD/gate case. The gameplay cases include six complete model-driven runs: each starting level with every key collected and with every key avoided. Twelve mode cases additionally cover endless play beyond all challenge targets, unchanged values/effects for all five coin categories, reset behavior, mode switching and real-menu start/restart/navigation at every challenge starting level. Sixteen personal-best cases cover persistence across store reloads, mode isolation, ties/lower scores, malformed values, write-failure recovery, live HUD updates, restart, loss/victory overlays, cumulative challenge points and real-menu refresh. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
 
 UI tests use actual JavaFX controls and the real Timeline callback. An injectable clock makes time boundaries deterministic. Keyboard events are dispatched through the scene or focused controls; seven cases specifically check `Tab` from pause, game-over and victory menu buttons. Fullscreen-state tests cover exit before starting, while paused and after restarting. The resource test loads the real main menu, checks the original font families, weights and sizes, starts the game and checks the score font without an FXML version warning.
 
 Separate local checks confirmed that fullscreen exit restores a `480 x 480` scene with a `400 x 400` canvas, and that the packaged JAR loads the original pixel fonts. These checks exercise programmatic actions and rendering; they do not certify human usability, native fullscreen behavior on every display or compatibility with another computer. Actual JavaFX previews were captured from the packaged game after programmatic keyboard/timer steps, showing key appearance, one/both gates open and pause. Native fullscreen entry/exit was checked with the separate HUD. The complete runs are automated model checks, not a record of final human play-testing.
+
+The JavaFX 25 migration was also checked through the actual packaged `Main` launcher: Challenge level selection, pixel fonts, windowed dimensions, pause and `Tab` restart passed. The launcher reported Java `27.0.1.0.3` and JavaFX `25.0.5+1`. These were local programmatic checks; the student's reported human play-test predates this runtime upgrade. JDK 25 and a second computer have not been separately tested. Maven's bundled dependencies and the JavaFX classpath launch emit runtime warnings on JDK 27; the checks above completed successfully with those warnings. The JAR command explicitly enables native access for JavaFX.
 
 ## 4. Implemented but Not Working Properly
 
@@ -206,7 +211,7 @@ Level configuration also defines the first coin of levels 2/3 at `(10,3)` and th
 
 | Problem | Resolution or current status | Location |
 | --- | --- | --- |
-| JavaFX 25.0.1 was incompatible with the available JDK 21 | Aligned the project to JavaFX 21.0.13 and repaired wrapper configuration. | `pom.xml`, Maven wrapper files |
+| JavaFX 25.0.1 was incompatible with the initially available JDK 21 | Initially aligned the project to JavaFX 21 and repaired the wrapper. After installing JDK 27, upgraded to JavaFX 25.0.5 with a Java 25 compilation target and reran the full build and tests. | `pom.xml`, Maven wrapper files |
 | IDE launch reported missing JavaFX runtime components | Introduced the ordinary `Main` launcher and separate `SnakeApplication`. | `Main.java`, `SnakeApplication.java` |
 | Reverse input and duplicate random-selection branches | Used direction values and a one-change-per-tick latch; centralized and tested coin selection. | `ui/GameController.java`, `game/Direction.java`, `game/CoinFactory.java` |
 | Invalid or repeated obstacle coordinates and full-board placement loops | Enumerated available cells without replacement; coin creation returns an empty optional when none are free. | `game/Obstacle.java`, `game/Coin.java`, `game/CoinFactory.java` |
@@ -220,7 +225,7 @@ Level configuration also defines the first coin of levels 2/3 at `(10,3)` and th
 | Independent rule tests missed interactions | Expanded to 22 lifecycle scenarios using actual controls, dispatched key events, timer callbacks and a controllable clock. | `ui/GameControllerLifecycleTest.java` in test sources |
 | Font URL paths containing spaces failed to load | Register the original bundled fonts from streams, avoiding the encoded file-path problem; verified the original font families/styles/sizes in the menu, game and packaged JAR. | `ui/ViewManager.java`, `src/main/resources/resources/views/styling.css`, `ui/ViewManagerResourcesTest.java` in test sources |
 | Pixel-font Main Menu button text was truncated | Use an explicit 14px game-menu button font inside the original button image; rendered-control assertions verify the full label. | `ui/GameView.java`, `ui/GameViewShortcutTest.java` in test sources |
-| FXML namespace version warning | Changed the namespace from JavaFX 26 to 21 to match the supported runtime; the real menu integration check loads without this warning. | `src/main/resources/resources/views/MainMenu.fxml`, `ui/ViewManagerResourcesTest.java` in test sources |
+| FXML namespace version warning | Aligned the namespace with the declared JavaFX runtime, now version 25; the real menu integration check loads without this warning. | `src/main/resources/resources/views/MainMenu.fxml`, `ui/ViewManagerResourcesTest.java` in test sources |
 
 The model still stores JavaFX colors, and final-level victory currently uses the legacy `markBoardFull()` win flag. These are maintainability limitations, not separately verified gameplay failures. The final class diagram and Javadoc describe the existing implementation.
 
@@ -228,8 +233,8 @@ The model still stores JavaFX colors, and final-level victory currently uses the
 
 - [Design.pdf](Design.pdf) covers all 26 top-level production types and three nested enums across three A3 landscape views: application/UI/persistence, session/movement/shortcuts, and coin construction/inheritance. It includes mode, personal-record and shortcut types; distinguishes retained references, ownership, dependencies and inheritance; and labels target multiplicities. Attributes and methods are omitted. All three pages have been rendered and visually checked against the final code. Include this PDF in the final submission.
 - [docs/build_design.py](docs/build_design.py) regenerates the diagram and checks the source inventory, selected retained-reference types, inheritance and connector geometry. The generator requires Python with `reportlab`; run `python docs/build_design.py` from the project folder. Java compilation and gameplay do not require Python. Regenerate and review the PDF if the production structure changes.
-- `Javadoc/` was regenerated from the final production source on 7 November 2026 using JDK 21.0.11. It includes all 29 production type pages (26 top-level types and three nested enums) and four package summaries. Generated documentation is local and ignored by Git. Follow the generation commands above after cloning, then include the whole resulting folder in the final submission. Test-only fixtures are excluded from the production diagram and API pages.
-- Final documentation checks confirmed the type/package coverage, descriptions of declared methods and constructors, and parameter/return sections where applicable. All 2,909 local HTML links and asset references resolved, including member anchors. The overview, game-session, movement-method and personal-record pages were also checked in a browser with offline navigation. The three shortcut states have explanatory source comments; this documentation update does not change executable game logic.
+- `Javadoc/` was regenerated from the final production source on 8 November 2026 using JDK 27.0.1.0.3 and the JavaFX 25.0.5 dependencies. It includes all 29 production type pages (26 top-level types and three nested enums) and four package summaries. Generated documentation is local and ignored by Git. Follow the generation commands above after cloning, then include the whole resulting folder in the final submission. Test-only fixtures are excluded from the production diagram and API pages.
+- Final documentation checks confirmed the type/package coverage, descriptions of declared methods and constructors, and parameter/return sections where applicable. All 3,266 local HTML links and asset references resolved, including member anchors. The overview, game-session, movement-method and personal-record pages were also checked in a browser with offline navigation. The three shortcut states have explanatory source comments; this documentation update does not change executable game logic.
 - [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) records completed materials and the remaining manual checks.
 - Generative AI assisted debugging, refactoring, implementation, testing and documentation. The separate `AI_Usage_Log.docx` is held locally and is not part of this repository. The student must review and update it to reflect the actual assistance, and complete the official COMP2042 AI Use Declaration Form. The log does not replace that form.
 
