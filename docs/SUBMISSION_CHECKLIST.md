@@ -1,8 +1,8 @@
 # COMP2042 submission checklist
 
-Documentation status reviewed on 8 November 2026 for the working tree based on `main`. The latest clean package build used Oracle JDK 27.0.1.0.3, JavaFX 25.0.5 and a Java 25 compilation target after the runtime upgrade.
+Documentation status reviewed on 8 November 2026 for the working tree based on `main`. Clean package builds with JavaFX 25.0.5 and the Java 23 compilation target passed on both Eclipse Temurin JDK 23.0.2+7 and Oracle JDK 27.0.1.0.3, on the same Windows 11 x64 computer.
 
-The README, final class diagram and generated Javadoc have been aligned with this production code. The earlier documentation update added comments for the three shortcut states. This runtime upgrade changes the build versions and FXML namespace; executable game rules and tests are unchanged. Documentation finalization does not mark the remaining human checks or final submission as complete.
+The README, final class diagram and generated Javadoc have been aligned with this production code. The earlier documentation update added comments for the three shortcut states. The runtime upgrade changed the dependencies and FXML namespace. This compatibility update lowers the Java compilation target to 23 and normalizes the Unix wrapper; executable game rules and tests are unchanged. Documentation finalization does not mark the remaining human checks or final submission as complete.
 
 ## Prepared materials
 
@@ -11,8 +11,9 @@ The README, final class diagram and generated Javadoc have been aligned with thi
 - [x] `Javadoc/` was regenerated from the final production source with JDK 27.0.1.0.3 and JavaFX 25.0.5 on 8 November 2026. The generation script fixes navigation to English and passed its Javadoc markup checks without warnings. Generated HTML is local and ignored by Git; a fresh clone must generate it before final packaging.
 - [x] Javadoc coverage matches all 29 production types and four packages. Declared methods/constructors and applicable parameter/return sections were checked. All 3,266 local HTML links and asset references resolved, including member anchors; offline browser navigation and representative pages were visually checked.
 - [x] The final `Design.pdf` covers 26 top-level production types and three nested enums across three A3 landscape views. Source inventory, selected retained references, inheritance and layout were checked, and all pages were rendered and visually reviewed. `docs/build_design.py` regenerates the PDF and checks the documented structure against the source.
-- [x] Automated verification: 239 JUnit test invocations passed with no failures, errors or skips in the clean Maven package build on JDK 27 / JavaFX 25.0.5.
-- [x] The actual packaged `Main` launcher reported Java 27.0.1.0.3 and JavaFX 25.0.5+1. Challenge level selection, pixel fonts, 480 x 480 windowed dimensions, pause and `Tab` restart passed programmatic checks.
+- [x] Automated verification: separate clean Maven package builds on JDK 23 and JDK 27 with JavaFX 25.0.5 passed 239 JUnit test invocations each, with no failures, errors or skips.
+- [x] The same Java 23-target JAR built with JDK 27 passed actual `Main` startup checks on both JDK 23.0.2 and JDK 27.0.1.0.3, each with JavaFX 25.0.5+1. Challenge level selection, pixel fonts, 480 x 480 windowed dimensions, pause and `Tab` restart passed. These checks used the same physical computer.
+- [x] `mvnw` uses LF line endings, enforced by `.gitattributes`. README documents `sh ./mvnw` for macOS/Linux and explains that native dependencies require a build for the target OS/CPU. Those operating systems have not been tested.
 - [x] Fullscreen restoration, focused-button `Tab`, pixel-font loading and the FXML version warning have regression coverage. The packaged JAR was also checked for the original fonts.
 - [x] Optional shortcuts and the countdown are implemented and covered, including complete automated runs from all three starting levels with all keys and without any keys. Actual scene previews and native fullscreen restoration were checked.
 - [x] Endless/Challenge mode selection is implemented; mode-specific rules, original endless scoring/effects and menu navigation have twelve additional automated cases.

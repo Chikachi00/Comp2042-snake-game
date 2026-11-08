@@ -12,10 +12,10 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
 
 ### Requirements
 
-- JDK 25 or later, including `java`, `javac` and `javadoc` on `PATH`. The compiler targets Java 25; the locally tested build uses JDK 27.
+- JDK 23 or later, including `java`, `javac` and `javadoc` on `PATH`. The compiler targets Java 23, matching the minimum required by JavaFX 25. Development can continue on JDK 27.
 - Internet access for the first Maven dependency download. A separate Maven installation is unnecessary because the project includes the Maven wrapper.
 - JavaFX 25.0.5 and JUnit 5.12.2 are declared in `pom.xml` and resolved by Maven. A separate JavaFX SDK installation is unnecessary.
-- The commands below use Windows Command Prompt and run from the folder containing `pom.xml` and `mvnw.cmd`. The locally verified environment is Windows 11 x64 with Oracle JDK 27.0.1.0.3.
+- The commands below use Windows Command Prompt and run from the folder containing `pom.xml` and `mvnw.cmd`. The locally verified environments are Windows 11 x64 with Eclipse Temurin JDK 23.0.2+7 and Oracle JDK 27.0.1.0.3, on the same computer.
 
 ### Build and run
 
@@ -26,7 +26,7 @@ Original project: <https://github.com/kooitt/CW2026>. The original commit histor
    cd Comp2042-snake-game
    ```
 
-2. Check that Java, the compiler and Maven all use JDK 25 or later (the recorded local checks use JDK 27):
+2. Check that Java, the compiler and Maven all use JDK 23 or later (local checks cover JDK 23 and 27):
 
    ```cmd
    java -version
@@ -57,7 +57,22 @@ If several JDKs are installed, set `JAVA_HOME` to the chosen JDK root and put it
 
 The IDE entry point is `com.comp2042.Main`. This ordinary Java launcher explicitly starts `SnakeApplication`, avoiding the JavaFX-subclass classpath-launch error encountered earlier. Import the folder containing `pom.xml` as a Maven project rather than opening only an individual Java file.
 
-On other platforms, use `./mvnw` instead of `mvnw.cmd` and the appropriate path separator. Those platforms and a second computer have not yet been verified. JavaFX native dependencies are platform-specific; build the JAR on its intended platform.
+### Java and platform compatibility
+
+The JavaFX 25 dependencies use Java 23 bytecode, and this project now targets the same version. A newer development JDK does not force users to install JDK 27. The same JAR built with JDK 27 was launched and checked on JDK 23 and JDK 27. JDK 24, 25 and 26 have not been separately tested.
+
+JavaFX 25 publishes native libraries for Windows x64, Linux x64, and macOS x64/AArch64. Use a matching JDK and operating system supported by that JavaFX distribution; Linux also requires a graphical desktop and GTK 3.20 or later. These are dependency requirements, not a claim that this game has been tested on every supported computer. See the [JavaFX 25 platform notes](https://docs.oracle.com/en/java/java-components/javafx/25/release-notes/) and [minimum Java/GTK requirements](https://openjfx.io/highlights/25/).
+
+The default runnable JAR bundles native libraries for the build computer. Build on the intended OS/CPU so Maven selects the matching native dependencies. A Windows-built JAR is not a macOS or Linux distribution. Only Windows 11 x64 has been tested; another computer, macOS and Linux still require validation.
+
+On macOS/Linux, use `sh ./mvnw` in place of `mvnw.cmd` and forward slashes in paths:
+
+```sh
+sh ./mvnw clean package
+java --enable-native-access=ALL-UNNAMED -jar target/snake-javafx.jar
+```
+
+The Unix wrapper uses LF line endings, enforced by `.gitattributes`; invoking it through `sh` also works when a ZIP extraction does not preserve its executable permission. A separate Maven installation is unnecessary.
 
 ### Browse or regenerate Javadoc
 
@@ -107,13 +122,13 @@ Choose Endless or Challenge in the main menu. Endless uses the original survival
 
 ### Verification
 
-The latest clean Maven package build, run on 8 November 2026 with Oracle JDK 27.0.1.0.3 and JavaFX 25.0.5 (Java 25 compilation target), passed **239 JUnit test invocations with zero failures, errors or skips**. This includes 22 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios, eight sprite-scaling/fullscreen-restoration scenarios and one menu/game font-resource integration test. New shortcut coverage adds two lifecycle/encapsulation cases, eighteen gameplay cases and one rendered HUD/gate case. The gameplay cases include six complete model-driven runs: each starting level with every key collected and with every key avoided. Twelve mode cases additionally cover endless play beyond all challenge targets, unchanged values/effects for all five coin categories, reset behavior, mode switching and real-menu start/restart/navigation at every challenge starting level. Sixteen personal-best cases cover persistence across store reloads, mode isolation, ties/lower scores, malformed values, write-failure recovery, live HUD updates, restart, loss/victory overlays, cumulative challenge points and real-menu refresh. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
+Clean Maven package builds on 8 November 2026 with JavaFX 25.0.5 and the Java 23 compilation target passed **239 JUnit test invocations with zero failures, errors or skips on each of Eclipse Temurin JDK 23.0.2+7 and Oracle JDK 27.0.1.0.3**. This includes 22 menu/timing lifecycle scenarios, four rainbow-to-next-level timer scenarios, eight sprite-scaling/fullscreen-restoration scenarios and one menu/game font-resource integration test. New shortcut coverage adds two lifecycle/encapsulation cases, eighteen gameplay cases and one rendered HUD/gate case. The gameplay cases include six complete model-driven runs: each starting level with every key collected and with every key avoided. Twelve mode cases additionally cover endless play beyond all challenge targets, unchanged values/effects for all five coin categories, reset behavior, mode switching and real-menu start/restart/navigation at every challenge starting level. Sixteen personal-best cases cover persistence across store reloads, mode isolation, ties/lower scores, malformed values, write-failure recovery, live HUD updates, restart, loss/victory overlays, cumulative challenge points and real-menu refresh. Earlier tests cover movement, free-cell generation, effect replacement, level objectives, score retention and combo boundaries.
 
 UI tests use actual JavaFX controls and the real Timeline callback. An injectable clock makes time boundaries deterministic. Keyboard events are dispatched through the scene or focused controls; seven cases specifically check `Tab` from pause, game-over and victory menu buttons. Fullscreen-state tests cover exit before starting, while paused and after restarting. The resource test loads the real main menu, checks the original font families, weights and sizes, starts the game and checks the score font without an FXML version warning.
 
 Separate local checks confirmed that fullscreen exit restores a `480 x 480` scene with a `400 x 400` canvas, and that the packaged JAR loads the original pixel fonts. These checks exercise programmatic actions and rendering; they do not certify human usability, native fullscreen behavior on every display or compatibility with another computer. Actual JavaFX previews were captured from the packaged game after programmatic keyboard/timer steps, showing key appearance, one/both gates open and pause. Native fullscreen entry/exit was checked with the separate HUD. The complete runs are automated model checks, not a record of final human play-testing.
 
-The JavaFX 25 migration was also checked through the actual packaged `Main` launcher: Challenge level selection, pixel fonts, windowed dimensions, pause and `Tab` restart passed. The launcher reported Java `27.0.1.0.3` and JavaFX `25.0.5+1`. These were local programmatic checks; the student's reported human play-test predates this runtime upgrade. JDK 25 and a second computer have not been separately tested. Maven's bundled dependencies and the JavaFX classpath launch emit runtime warnings on JDK 27; the checks above completed successfully with those warnings. The JAR command explicitly enables native access for JavaFX.
+The actual packaged `Main` launcher was checked on both JDK 23 and JDK 27 using the same JDK 27-built JAR. Challenge level selection, pixel fonts, windowed dimensions, pause and `Tab` restart passed on both. The launchers reported Java `23.0.2` / `27.0.1.0.3` and JavaFX `25.0.5+1`. These were local programmatic checks on the same computer; the student's reported human play-test predates this runtime upgrade. They do not replace the required second-computer validation. Maven's bundled dependencies and the JavaFX classpath launch emit runtime warnings on JDK 27; the checks above completed successfully with those warnings. The JAR command explicitly enables native access for JavaFX.
 
 ## 4. Implemented but Not Working Properly
 
@@ -211,7 +226,8 @@ Level configuration also defines the first coin of levels 2/3 at `(10,3)` and th
 
 | Problem | Resolution or current status | Location |
 | --- | --- | --- |
-| JavaFX 25.0.1 was incompatible with the initially available JDK 21 | Initially aligned the project to JavaFX 21 and repaired the wrapper. After installing JDK 27, upgraded to JavaFX 25.0.5 with a Java 25 compilation target and reran the full build and tests. | `pom.xml`, Maven wrapper files |
+| JavaFX 25.0.1 was incompatible with the initially available JDK 21 | Initially aligned the project to JavaFX 21 and repaired the wrapper. After installing JDK 27, upgraded to JavaFX 25.0.5. The final Java 23 compilation target matches JavaFX 25's minimum; full builds and tests passed on JDK 23 and 27. | `pom.xml`, Maven wrapper files |
+| Unix Maven wrapper had Windows CRLF line endings | Normalized `mvnw` to LF, enforced wrapper line endings in `.gitattributes`, and documented `sh ./mvnw` so ZIP executable permissions do not block invocation. macOS/Linux execution remains unverified. | `mvnw`, `.gitattributes`, compilation instructions |
 | IDE launch reported missing JavaFX runtime components | Introduced the ordinary `Main` launcher and separate `SnakeApplication`. | `Main.java`, `SnakeApplication.java` |
 | Reverse input and duplicate random-selection branches | Used direction values and a one-change-per-tick latch; centralized and tested coin selection. | `ui/GameController.java`, `game/Direction.java`, `game/CoinFactory.java` |
 | Invalid or repeated obstacle coordinates and full-board placement loops | Enumerated available cells without replacement; coin creation returns an empty optional when none are free. | `game/Obstacle.java`, `game/Coin.java`, `game/CoinFactory.java` |
