@@ -20,6 +20,10 @@
                 <ComboBox fx:id="modeSelector" prefWidth="200.0" styleClass="menu-choice" />
             </HBox>
             <Label fx:id="modeDescription" alignment="CENTER" textAlignment="CENTER" wrapText="true" prefWidth="440.0" minHeight="38.0" style="-fx-font-size: 12; -fx-text-fill: #52604b;" />
+            <HBox fx:id="speedOptions" alignment="CENTER" spacing="14.0">
+                <Label text="Speed" minWidth="72.0" style="-fx-font-size: 14;" />
+                <ComboBox fx:id="speedSelector" prefWidth="200.0" styleClass="menu-choice" />
+            </HBox>
             <HBox fx:id="levelOptions" alignment="CENTER" spacing="14.0">
                 <Label text="Start at" minWidth="72.0" style="-fx-font-size: 14;" />
                 <ComboBox fx:id="levelSelector" prefWidth="200.0" styleClass="menu-choice" />

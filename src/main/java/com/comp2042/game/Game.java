@@ -28,13 +28,13 @@ public class Game {
      */
     public Game(int x, int y, boolean powerUp, char difficulty) {
         if (difficulty == 'E') {
-            speed = 8.5;
+            speed = GameSpeed.MEDIUM.movesPerSecond();
             noBorder = true;
         } else if (difficulty == 'N') {
-            speed = 8.5;
+            speed = GameSpeed.MEDIUM.movesPerSecond();
             noBorder = false;
         } else if (difficulty == 'H') {
-            speed = 13;
+            speed = GameSpeed.FAST.movesPerSecond();
             noBorder = false;
         }
         this.powerUp = powerUp;
@@ -47,6 +47,20 @@ public class Game {
         } else {
             multiplier = 20;
         }
+    }
+
+    /**
+     * Creates normal-wall settings with a selected endless-mode movement speed.
+     * Speed selection changes neither coin scoring nor border rules.
+     *
+     * @param x board width in cells
+     * @param y board height in cells
+     * @param powerUp whether special coins may be generated
+     * @param speed selected base movement speed, retained when a session restarts
+     */
+    public Game(int x, int y, boolean powerUp, GameSpeed speed) {
+        this(x, y, powerUp, 'N');
+        this.speed = java.util.Objects.requireNonNull(speed, "speed").movesPerSecond();
     }
 
     /**

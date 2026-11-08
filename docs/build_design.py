@@ -29,7 +29,7 @@ TOP_LEVEL = {
     'entry': ['Main', 'SnakeApplication'],
     'ui': ['ViewManager', 'MainMenuController', 'GameController', 'GameView', 'GameFlow'],
     'persistence': ['HighScoreStore'],
-    'game': ['Game', 'GameSession', 'GameMode', 'Level', 'Snake', 'Obstacle', 'Direction',
+    'game': ['Game', 'GameSession', 'GameMode', 'GameSpeed', 'Level', 'Snake', 'Obstacle', 'Direction',
              'ComboTracker', 'Shortcut', 'ShortcutSnapshot', 'Coin', 'CoinType',
              'CoinFactory', 'CoinEffectService', 'GoldCoin', 'BlueCoin', 'RainbowCoin', 'SilverCoin'],
 }
@@ -37,7 +37,7 @@ AREA = {name: area for area, names in TOP_LEVEL.items() for name in names}
 AREA.update({'GameFlow.State': 'ui', 'GameSession.StepResult': 'game', 'Shortcut.State': 'game',
              'Application': 'external'})
 KINDS = {name: 'class' for name in AREA}
-for name in ['GameMode', 'Level', 'Direction', 'CoinType', 'GameFlow.State',
+for name in ['GameMode', 'GameSpeed', 'Level', 'Direction', 'CoinType', 'GameFlow.State',
              'GameSession.StepResult', 'Shortcut.State']:
     KINDS[name] = 'enumeration'
 KINDS['ShortcutSnapshot'] = 'record'
@@ -87,7 +87,7 @@ def sheets():
         Box('Main', 45, 120, 175), Box('SnakeApplication', 350, 120, 220),
         Box('Application', 850, 120, 280), Box('ViewManager', 350, 265, 220),
         Box('HighScoreStore', 850, 265, 280), Box('MainMenuController', 350, 410, 220),
-        Box('GameMode', 45, 410), Box('Level', 45, 555),
+        Box('GameMode', 45, 410), Box('GameSpeed', 45, 265), Box('Level', 45, 555),
         Box('GameController', 350, 555, 220), Box('GameView', 650, 555),
         Box('GameSession', 950, 555), Box('GameFlow', 350, 690, 220),
         Box('GameFlow.State', 650, 690),
@@ -100,6 +100,8 @@ def sheets():
     p.direct('ViewManager', 'R', 'HighScoreStore', 'L', text='highScores', label=(710,281), cardinality='1', cardinal_at=(834,281))
     p.edge('GameController', 'HighScoreStore', [(350,595),(300,595),(300,347),(990,347),(990,321)], text='highScores (shared)', label=(762,337), cardinality='1', cardinal_at=(1004,337))
     p.direct('MainMenuController', 'L', 'GameMode', 'R', kind='dependency', text='selects mode', label=(298,427))
+    p.edge('MainMenuController', 'GameSpeed', [(380,410),(380,360),(145,360),(145,321)],
+           kind='dependency', text='selects speed', label=(242,350))
     p.edge('MainMenuController', 'Level', [(350,452),(280,452),(280,583),(245,583)], kind='dependency', text='selects start', label=(261,516))
     p.edge('HighScoreStore', 'GameMode', [(850,305),(800,305),(800,386),(145,386),(145,410)], kind='dependency', text='keys records by', label=(713,376))
     for target, x in [('GameController',460), ('GameView',750), ('GameSession',1050)]:
@@ -314,7 +316,7 @@ def validate(project_root, pages):
                     if box.name in (source,target):continue
                     if (a[0]==b[0] and box.x+1<a[0]<box.x+box.w-1 and max(min(a[1],b[1]),box.y+1)<min(max(a[1],b[1]),box.y+box.h-1)) or (a[1]==b[1] and box.y+1<a[1]<box.y+box.h-1 and max(min(a[0],b[0]),box.x+1)<min(max(a[0],b[0]),box.x+box.w-1)):
                         raise ValueError(f'Connector {source}->{target} crosses {box.name}')
-    print('Verified 26 top-level project types, 3 nested enums, retained references and inheritance; diagram geometry is valid.')
+    print('Verified 27 top-level project types, 3 nested enums, retained references and inheritance; diagram geometry is valid.')
 
 
 def main():

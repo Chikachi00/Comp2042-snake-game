@@ -4,6 +4,7 @@ import com.comp2042.game.Coin;
 import com.comp2042.game.Direction;
 import com.comp2042.game.Game;
 import com.comp2042.game.GameSession;
+import com.comp2042.game.GameSpeed;
 import com.comp2042.game.Level;
 import com.comp2042.game.RainbowCoin;
 import javafx.animation.Animation;
@@ -16,6 +17,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.awt.Point;
 import java.lang.reflect.Constructor;
@@ -63,6 +65,46 @@ class GameControllerTimingTest extends JavaFxTestSupport {
                 assertEquals(new Point(9, 10), session.getSnake().getHead());
                 assertEquals(Direction.LEFT, session.getSnake().getDirection());
                 assertEquals(game.getSpeed(), timer.getRate(), "New level must start at its base speed");
+            } finally {
+                timer.stop();
+                stage.close();
+            }
+        });
+    }
+
+    @ParameterizedTest
+    @EnumSource(GameSpeed.class)
+    void endlessTimerKeepsSelectedSpeedThroughEffectsPauseAndRestart(GameSpeed speed) throws Exception {
+        runOnFxThread(() -> {
+            Game game = new Game(20, 20, true, speed);
+            GameSession session = new GameSession(game);
+            GameView view = new GameView(game);
+            view.makeScene(new Scene(new StackPane(), 480, 480), session.getSnake(), session.getCoin());
+            Stage stage = new Stage();
+            GameController controller = new GameController(session, view, stage, () -> { });
+            Timeline timer = (Timeline) field(GameController.class, "animation").get(controller);
+            try {
+                controller.handle(leftKey());
+                assertEquals(speed.movesPerSecond(), timer.getRate());
+                putCoin(session, new Point(9, 10), true);
+                tick(timer);
+                assertEquals(speed.movesPerSecond() + 5, timer.getRate());
+                controller.pause();
+                assertEquals(Animation.Status.PAUSED, timer.getStatus());
+                controller.resume();
+                assertEquals(Animation.Status.RUNNING, timer.getStatus());
+                assertEquals(speed.movesPerSecond() + 5, timer.getRate());
+
+                putCoin(session, new Point(8, 10), false);
+                tick(timer);
+                assertEquals(speed.movesPerSecond(), timer.getRate());
+                putCoin(session, new Point(7, 10), true);
+                tick(timer);
+                assertEquals(speed.movesPerSecond() + 5, timer.getRate());
+                controller.restart();
+                assertEquals(speed.movesPerSecond(), timer.getRate());
+                assertEquals(0, session.getScorePoints());
+                assertEquals(Animation.Status.STOPPED, timer.getStatus());
             } finally {
                 timer.stop();
                 stage.close();

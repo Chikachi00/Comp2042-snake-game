@@ -4,6 +4,7 @@ import com.comp2042.game.Coin;
 import com.comp2042.game.Game;
 import com.comp2042.game.GameMode;
 import com.comp2042.game.GameSession;
+import com.comp2042.game.GameSpeed;
 import com.comp2042.game.Level;
 import com.comp2042.game.Snake;
 
@@ -17,7 +18,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
- * Presents mode and level choices and constructs a game from the FXML Start action.
+ * Presents mode, endless-speed and challenge-level choices and starts the selected game.
  */
 public class MainMenuController {
 
@@ -30,26 +31,33 @@ public class MainMenuController {
     @FXML private ComboBox<GameMode> modeSelector;
     @FXML private ComboBox<Level> levelSelector;
     @FXML private HBox levelOptions;
+    @FXML private ComboBox<GameSpeed> speedSelector;
+    @FXML private HBox speedOptions;
     @FXML private Label modeDescription;
     @FXML private Label bestScoreLabel;
 
     /**
-     * Defaults to classic endless play and shows level selection only for a challenge.
+     * Defaults to medium-speed endless play and prepares the options for each mode.
      */
     @FXML private void initialize() {
         levelSelector.getItems().setAll(Level.values());
         levelSelector.setValue(Level.ONE);
+        speedSelector.getItems().setAll(GameSpeed.values());
+        speedSelector.setValue(GameSpeed.MEDIUM);
         modeSelector.getItems().setAll(GameMode.values());
         modeSelector.valueProperty().addListener((observable, previous, selected) -> updateModeOptions());
         modeSelector.setValue(GameMode.ENDLESS);
     }
 
-    /** Updates mode guidance while preserving the last challenge starting-level selection. */
+    /** Shows the selected mode's options while retaining the last speed and starting level. */
     private void updateModeOptions() {
         boolean challenge = modeSelector.getValue() == GameMode.CHALLENGE;
         levelOptions.setVisible(challenge);
         levelOptions.setManaged(challenge);
         levelSelector.setDisable(!challenge);
+        speedOptions.setVisible(!challenge);
+        speedOptions.setManaged(!challenge);
+        speedSelector.setDisable(challenge);
         modeDescription.setText(challenge
                 ? "Three levels, combo bonuses and optional key shortcuts."
                 : "Classic survival with special coins. No level targets or combos.");
@@ -73,7 +81,7 @@ public class MainMenuController {
     }
 
     /**
-     * Creates a game window using the selected mode and, for a challenge, starting level.
+     * Starts the chosen endless speed or challenge starting level in a new game window.
      */
     public void handleStart() {
         Stage gameStage = viewManager.createGameStage();
@@ -87,8 +95,10 @@ public class MainMenuController {
      * @param gameStage stage that will host the new game
      */
     private void launchSnake(Stage gameStage) {
-        Game game = new Game(X_VALUE, Y_VALUE, POWER_UP, DIFFICULTY);
-        GameSession session = modeSelector.getValue() == GameMode.CHALLENGE
+        boolean challenge = modeSelector.getValue() == GameMode.CHALLENGE;
+        Game game = challenge ? new Game(X_VALUE, Y_VALUE, POWER_UP, DIFFICULTY)
+                : new Game(X_VALUE, Y_VALUE, POWER_UP, speedSelector.getValue());
+        GameSession session = challenge
                 ? new GameSession(game, levelSelector.getValue()) : new GameSession(game);
         Snake snek = session.getSnake();
         Coin coin = session.getCoin();
