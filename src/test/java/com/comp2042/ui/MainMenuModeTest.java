@@ -1,6 +1,7 @@
 package com.comp2042.ui;
 
 import com.comp2042.game.GameMode;
+import com.comp2042.game.GameSpeed;
 import com.comp2042.game.Level;
 import com.comp2042.persistence.HighScoreStore;
 import javafx.event.Event;
@@ -28,15 +29,25 @@ class MainMenuModeTest extends JavaFxTestSupport {
                 assertFalse(menu.scene().lookup("#levelOptions").isManaged());
                 assertTrue(menu.level().isDisabled());
                 assertTrue(menu.text("modeDescription").contains("No level targets"));
+                assertEquals(GameSpeed.MEDIUM, menu.speed().getValue());
+                assertArrayEquals(GameSpeed.values(), menu.speed().getItems().toArray());
+                assertTrue(menu.scene().lookup("#speedOptions").isVisible());
+                assertTrue(menu.scene().lookup("#speedOptions").isManaged());
+                assertFalse(menu.speed().isDisabled());
+                menu.speed().setValue(GameSpeed.FAST);
 
                 menu.mode().setValue(GameMode.CHALLENGE);
                 assertTrue(menu.scene().lookup("#levelOptions").isVisible());
                 assertTrue(menu.scene().lookup("#levelOptions").isManaged());
                 assertFalse(menu.level().isDisabled());
+                assertFalse(menu.scene().lookup("#speedOptions").isVisible());
+                assertFalse(menu.scene().lookup("#speedOptions").isManaged());
+                assertTrue(menu.speed().isDisabled());
                 assertArrayEquals(Level.values(), menu.level().getItems().toArray());
                 assertEquals(Level.ONE, menu.level().getValue());
                 menu.level().setValue(Level.THREE);
                 menu.mode().setValue(GameMode.ENDLESS);
+                assertEquals(GameSpeed.FAST, menu.speed().getValue());
                 menu.mode().setValue(GameMode.CHALLENGE);
                 assertEquals(Level.THREE, menu.level().getValue());
             }
@@ -48,14 +59,14 @@ class MainMenuModeTest extends JavaFxTestSupport {
         runOnFxThread(() -> {
             try (Menu menu = new Menu()) {
                 menu.start();
-                assertEquals("Endless", menu.gameText("progressLabel"));
+                assertEquals("Endless | 8.5 moves/s", menu.gameText("progressLabel"));
                 assertEquals("Classic survival", menu.gameText("comboLabel"));
                 assertEquals("", menu.gameText("shortcutStatus"));
                 assertFalse(menu.gameScene().lookup("#comboBar").isVisible());
                 menu.pause();
                 assertEquals("Paused", menu.gameText("menuTitle"));
                 menu.gameButton("restartButton").fire();
-                assertEquals("Endless", menu.gameText("progressLabel"));
+                assertEquals("Endless | 8.5 moves/s", menu.gameText("progressLabel"));
                 assertEquals("Score: 0", menu.gameText("scoreLabel"));
                 assertTrue(menu.gameScene().lookup("#startHint").isVisible());
                 menu.pause();
@@ -71,7 +82,7 @@ class MainMenuModeTest extends JavaFxTestSupport {
 
                 menu.mode().setValue(GameMode.ENDLESS);
                 menu.start();
-                assertEquals("Endless", menu.gameText("progressLabel"));
+                assertEquals("Endless | 8.5 moves/s", menu.gameText("progressLabel"));
                 assertEquals("Score: 0", menu.gameText("scoreLabel"));
                 assertEquals("", menu.gameText("shortcutStatus"));
                 assertEquals("Collect coins. Avoid walls and your own tail.", menu.gameText("ruleHint"));
@@ -101,6 +112,38 @@ class MainMenuModeTest extends JavaFxTestSupport {
         });
     }
 
+    @ParameterizedTest
+    @EnumSource(GameSpeed.class)
+    void endlessUsesTheChosenSpeedAndRetainsItAcrossRestartAndMenuNavigation(GameSpeed speed)
+            throws Exception {
+        runOnFxThread(() -> {
+            try (Menu menu = new Menu()) {
+                menu.speed().setValue(speed);
+                menu.scene().getRoot().applyCss();
+                menu.scene().getRoot().layout();
+                assertTrue(menu.scene().lookup("#speedOptions").localToScene(
+                        menu.scene().lookup("#speedOptions").getBoundsInLocal()).getMaxY()
+                        < menu.scene().lookup("#bestScoreLabel").getBoundsInParent().getMinY(),
+                        "Speed choices must fit above the saved-record label");
+                menu.start();
+                String expected = "Endless | " + speed.movesPerSecond() + " moves/s";
+                assertEquals(expected, menu.gameText("progressLabel"));
+                menu.pause();
+                menu.gameButton("restartButton").fire();
+                assertEquals(expected, menu.gameText("progressLabel"));
+                assertEquals("Score: 0", menu.gameText("scoreLabel"));
+                menu.pause();
+                menu.back();
+                assertEquals(speed, menu.speed().getValue());
+                menu.mode().setValue(GameMode.CHALLENGE);
+                menu.mode().setValue(GameMode.ENDLESS);
+                assertEquals(speed, menu.speed().getValue());
+                menu.start();
+                assertEquals(expected, menu.gameText("progressLabel"));
+            }
+        });
+    }
+
     private static final class Menu implements AutoCloseable {
         final Stage primary = new Stage();
         final TestViewManager manager = new TestViewManager(primary);
@@ -117,6 +160,8 @@ class MainMenuModeTest extends JavaFxTestSupport {
         ComboBox<GameMode> mode() { return (ComboBox<GameMode>) scene().lookup("#modeSelector"); }
         @SuppressWarnings("unchecked")
         ComboBox<Level> level() { return (ComboBox<Level>) scene().lookup("#levelSelector"); }
+        @SuppressWarnings("unchecked")
+        ComboBox<GameSpeed> speed() { return (ComboBox<GameSpeed>) scene().lookup("#speedSelector"); }
         String text(String id) { return ((Label) scene().lookup("#" + id)).getText(); }
         String gameText(String id) { return ((Label) gameScene().lookup("#" + id)).getText(); }
         Button gameButton(String id) { return (Button) gameScene().lookup("#" + id); }

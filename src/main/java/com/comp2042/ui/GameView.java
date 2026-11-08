@@ -464,7 +464,8 @@ public class GameView {
             progressLabel.setText(session.getLevel() + "  |  Coins: " + session.getLevelCoins()
                     + "/" + session.getLevel().target());
         } else {
-            progressLabel.setText(session.getMode().toString());
+            progressLabel.setText(session.getMode() + " | "
+                    + String.format(Locale.ROOT, "%.1f moves/s", session.getSpeed()));
         }
         int count = session.getComboCount();
         comboLabel.setText(session.getMode() == GameMode.ENDLESS ? "Classic survival"
