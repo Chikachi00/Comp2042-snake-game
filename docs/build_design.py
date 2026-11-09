@@ -18,13 +18,8 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 W, H = landscape(A3)
-INK = HexColor('#263748')
-MUTED = HexColor('#5a6b78')
-PALETTE = {
-    'entry': HexColor('#f6eee6'), 'ui': HexColor('#eaf1fb'),
-    'game': HexColor('#edf5ed'), 'persistence': HexColor('#fcf1d9'),
-    'external': HexColor('#f0f1f3'),
-}
+INK = HexColor('#000000')
+MUTED = HexColor('#444444')
 TOP_LEVEL = {
     'entry': ['Main', 'SnakeApplication'],
     'ui': ['ViewManager', 'MainMenuController', 'GameController', 'GameView', 'GameFlow'],
@@ -42,8 +37,6 @@ for name in ['GameMode', 'GameSpeed', 'Level', 'Direction', 'CoinType', 'GameFlo
     KINDS[name] = 'enumeration'
 KINDS['ShortcutSnapshot'] = 'record'
 KINDS['Application'] = 'external, abstract'
-PRIVATE = {'GameFlow.State', 'Shortcut.State'}
-PACKAGE = {'GameFlow', 'ComboTracker', 'Shortcut', 'CoinFactory', 'CoinEffectService'}
 
 
 def namespace(name):
@@ -82,7 +75,7 @@ class Sheet:
 
 
 def sheets():
-    p = Sheet('Application, interface and personal records',
+    p = Sheet('Application and UI',
               'Entry points, JavaFX presentation, navigation and the shared record store.', [
         Box('Main', 45, 120, 175), Box('SnakeApplication', 350, 120, 220),
         Box('Application', 850, 120, 280), Box('ViewManager', 350, 265, 220),
@@ -111,14 +104,9 @@ def sheets():
     p.edge('GameController', 'GameSession', [(570,600),(610,600),(610,646),(1050,646),(1050,611)], text='session', label=(805,636), cardinality='1', cardinal_at=(1064,628))
     p.direct('GameController', 'B', 'GameFlow', 'T', kind='composition', text='flow', label=(490,657), cardinality='1', cardinal_at=(474,680))
     p.direct('GameFlow', 'R', 'GameFlow.State', 'L', text='state', label=(610,707), cardinality='1', cardinal_at=(634,733))
-    p.notes = [(45,658,238,[
-        'GameSession and GameView continue on p.2.',
-        'Coin collaborators are expanded on p.3.',
-        'HighScoreStore is shared between rounds;',
-        'it is not composed into each controller.',
-    ])]
+    p.notes = []
 
-    q = Sheet('Session state, movement and optional shortcuts',
+    q = Sheet('Game state and shortcuts',
               'Current references and snapshot conversion. Both modes use the same session coordinator.', [
         Box('Game',45,120,180), Box('Snake',340,120,180), Box('Obstacle',635,120,180), Box('Coin',930,120,180),
         Box('GameSession',475,300,220), Box('ComboTracker',45,300,180), Box('Level',930,300,180),
@@ -149,13 +137,12 @@ def sheets():
     q.edge('GameView','GameSession',[(930,565),(825,565),(825,328),(695,328)],kind='dependency',text='renders',label=(759,318))
     q.edge('GameView','Game',[(930,591),(870,591),(870,108),(135,108),(135,120)],text='game',label=(847,282),cardinality='1',cardinal_at=(149,110))
     q.notes = [(45,370,195,[
-        'Levels: nullable in Endless.',
-        'Shortcuts: 0 / 1 / 2 by level.',
-        'View caches Snake, Coin and',
+        'Level references are optional in Endless.',
+        'GameView caches Snake, Coin and',
         'Obstacle (0..1 each).',
     ])]
 
-    r = Sheet('Coin construction and polymorphic effects',
+    r = Sheet('Coins and effects',
               'The concrete Coin class supplies the shared contract; four subclasses override category, value or effect.', [
         Box('GameSession',60,150,210), Box('CoinFactory',450,150,210), Box('CoinEffectService',850,150,240),
         Box('Coin',450,410,210), Box('CoinType',850,410,240),
@@ -171,13 +158,8 @@ def sheets():
     for name, x in [('GoldCoin',160),('BlueCoin',440),('RainbowCoin',720),('SilverCoin',1000)]:
         r.edge(name,'Coin',[(x,650),(x,556),(555,556),(555,466)],kind='inheritance')
     r.notes = [(220,282,220,[
-        'CoinFactory and CoinEffectService use',
-        'Game, Snake and Obstacle as parameters.',
-        'These classes appear on page 2.',
-    ]),(60,485,270,[
-        'Coin is concrete, not an abstract class.',
-        'Effects use subclass overrides;',
-        'there is no separate Strategy interface.',
+        'CoinFactory and CoinEffectService also',
+        'use Game, Snake and Obstacle (page 2).',
     ])]
     return [p,q,r]
 
@@ -204,11 +186,9 @@ def arrow(c, tip, previous, kind):
 
 
 def draw(c, sheet, number, total):
-    c.setFillColor(INK);c.setFont('Helvetica-Bold',10)
-    c.drawString(40,H-34,'COMP2042  /  FINAL CLASS DIAGRAM')
-    c.setFont('Helvetica-Bold',22);c.drawString(40,H-65,sheet.title)
-    c.setFont('Helvetica',10.5);c.setFillColor(MUTED);c.drawString(40,H-85,sheet.subtitle)
-    c.setStrokeColor(HexColor('#d4dde3'));c.line(40,H-94,W-40,H-94)
+    c.setFillColor(INK);c.setFont('Helvetica',10)
+    c.drawString(40,H-34,'COMP2042 Class diagram')
+    c.setFont('Helvetica-Bold',15);c.drawString(40,H-63,sheet.title)
     for source,target,points,kind,text,at,mult,mult_at in sheet.edges:
         c.setLineWidth(1);c.setStrokeColor(INK);c.setDash(5,3) if kind=='dependency' else c.setDash()
         path=c.beginPath();path.moveTo(points[0][0],H-points[0][1])
@@ -223,31 +203,26 @@ def draw(c, sheet, number, total):
                 path.lineTo(x+distance*cos(a)-offset*sin(a),H-(y+distance*sin(a)+offset*cos(a)))
             path.close();c.setFillColor(INK);c.drawPath(path,fill=1)
     for box in sheet.boxes.values():
-        c.setFillColor(PALETTE[AREA[box.name]]);c.setStrokeColor(INK);c.setLineWidth(1)
-        c.roundRect(box.x,H-box.y-box.h,box.w,box.h,3,fill=1,stroke=1)
+        c.setFillColor(white);c.setStrokeColor(INK);c.setLineWidth(1)
+        c.rect(box.x,H-box.y-box.h,box.w,box.h,fill=1,stroke=1)
         kind=KINDS[box.name]
-        if box.name in PRIVATE:kind += ', private'
-        elif box.name in PACKAGE:kind += ', package'
-        c.setFillColor(MUTED);c.setFont('Helvetica',8.5)
-        c.drawCentredString(box.x+box.w/2,H-box.y-12,'<<'+kind+'>>')
+        if kind in ('enumeration', 'record') or box.name == 'Application':
+            kind = 'external' if box.name == 'Application' else kind
+            c.setFillColor(MUTED);c.setFont('Helvetica',8.5)
+            c.drawCentredString(box.x+box.w/2,H-box.y-12,'<<'+kind+'>>')
         c.setFillColor(INK);c.setFont('Helvetica-Oblique' if box.name=='Application' else 'Helvetica-Bold',13)
         c.drawCentredString(box.x+box.w/2,H-box.y-31,box.name)
-        c.setFillColor(MUTED);c.setFont('Helvetica',8.5)
-        c.drawCentredString(box.x+box.w/2,H-box.y-47,namespace(box.name))
     for source,target,points,kind,text,at,mult,mult_at in sheet.edges:
         if text:draw_label(c,*at,text)
         if mult:draw_label(c,*mult_at,mult)
     for x,y,width,lines in sheet.notes:
-        c.setFillColor(HexColor('#f7f9fa'));c.setStrokeColor(HexColor('#d6dfe4'))
-        c.roundRect(x,H-y-len(lines)*14-16,width,len(lines)*14+16,3,fill=1,stroke=1)
         c.setFont('Helvetica',9);c.setFillColor(MUTED)
         for i,line in enumerate(lines):c.drawString(x+9,H-y-16-i*14,line)
-    c.setStrokeColor(HexColor('#d4dde3'));c.line(40,76,W-40,76)
     c.setFillColor(MUTED);c.setFont('Helvetica',8.5)
-    c.drawString(40,60,'Solid open arrow: retained reference  |  Filled diamond: exclusive helper/shortcut ownership  |  Dashed arrow: use/create/return  |  Hollow triangle: inheritance')
-    c.drawString(40,45,'Target multiplicities count references per source object. Crossings are not junctions. Repeated classifiers denote the same type across views.')
-    c.drawString(40,30,'Project classes and nested enums are included. Framework/JDK internals and most method-parameter dependencies are omitted; no project-defined interfaces exist.')
-    c.drawRightString(W-40,15,f'Final implementation  /  {number} of {total}')
+    if number == 1:
+        c.drawString(40,45,'Solid arrow: association | Dashed arrow: dependency | Filled diamond: composition | Open triangle: inheritance')
+        c.drawString(40,30,'Multiplicities apply at the target end. Crossings are not junctions. Repeated class boxes represent the same type.')
+    c.drawRightString(W-40,20,f'{number} / {total}')
     c.showPage()
 
 
