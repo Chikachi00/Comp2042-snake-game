@@ -183,7 +183,7 @@ No gameplay failures are known from the recorded checks. Fixed issues and regres
 
 All planned gameplay features are implemented, including the Endless speed selector.
 
-The remaining review checks, AI declaration, demonstration video and packaging are listed in the [submission checklist](docs/SUBMISSION_CHECKLIST.md).
+The demonstration video is complete (2 min 39.95 s, MP4/H.264, about 149.8 MB). The completed AI usage log is included in the submission package. Check the module's declaration instructions and upload the final ZIP to Moodle; see the [submission checklist](docs/SUBMISSION_CHECKLIST.md).
 
 ## 6. New Java Classes
 
@@ -298,6 +298,6 @@ Remaining maintainability limitations: model classes still use JavaFX colors, an
 - `Javadoc/` was regenerated on 8 November 2026 with JDK 27.0.1.0.3 and JavaFX 25.0.5. It covers 30 production types (27 top-level and three nested enums) and four packages. Test fixtures are excluded from the diagram and API pages. Generate Javadoc after cloning and include the folder in the submission.
 - Javadoc checks covered type/package coverage, declared methods and constructors, and applicable parameter/return sections. All 3,364 local links and assets resolved, including member anchors. Offline browser checks covered the overview, session, movement and personal-record pages. The API pages include `GameSpeed` and the speed-preset `Game` constructor.
 - [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) records completed materials and the remaining manual checks.
-- Generative AI assisted debugging, refactoring, feature implementation, testing and documentation. `AI_Usage_Log.docx` is held locally outside this repository. Review it against the assistance used and complete the official COMP2042 AI Use Declaration Form. The log is supplementary and does not replace the form.
+- Generative AI assisted debugging, refactoring, feature implementation, testing and documentation. The completed `AI_Usage_Log_LinYiwei.docx` is included in the submission package. Confirm that the supplied form meets the module's COMP2042 AI Use Declaration Form requirements and follow any separate declaration instructions on Moodle.
 
 The submission folder needs `README.md`, `Design.pdf`, `Javadoc`, an own-voice demonstration video and the complete project ZIP. Use the [checklist](docs/SUBMISSION_CHECKLIST.md) for remaining checks, student details and packaging.

@@ -1,6 +1,6 @@
 # COMP2042 submission checklist
 
-Reviewed on 8 November 2026 for the merged `main` version, including endless-speed selection. The [README](../README.md#verification) records the test environments and results. Manual results were confirmed by the project author.
+Reviewed on 9 November 2026 for the merged `main` version, including endless-speed selection. The [README](../README.md#verification) records the test environments and results. Manual results were confirmed by the project author.
 
 ## Prepared materials
 
@@ -17,7 +17,7 @@ Reviewed on 8 November 2026 for the merged `main` version, including endless-spe
 - [x] Slow/Medium/Fast use 5/8.5/13 moves/s; Medium is the default. Sixteen cases cover rules, menu selection/retention/layout, Timeline rates, rainbow effects, pause/resume and restart. Packaged-JAR checks passed on local JDK 23 and 27.
 - [x] Twelve mode cases cover Endless/Challenge selection, original endless scoring/effects and menu navigation.
 - [x] Sixteen personal-best cases cover separate mode records, persistence, storage/controller/menu integration, failed saves and challenge totals.
-- [x] README acknowledges AI assistance. The usage log is held locally for review.
+- [x] README acknowledges AI assistance. The completed AI usage log is included with the submission.
 - [x] Local manual play-testing passed on 7 November 2026, as reported by the project author.
 - [x] Second-computer build, launch and gameplay passed on Cao Shiyu's Windows 11 x64 computer with Eclipse Temurin 25.0.5+8 and Maven 3.9.11 on 8 November 2026, including the final three-speed options. README records the session-only Java home correction. The exact JDK 25 JUnit count was not supplied.
 - [x] Accidental terminal-help file removed in `cf22eb3`. Generated documentation, build output and personal scores are excluded from tracked files.
@@ -36,26 +36,29 @@ The second-computer run is complete. Unchecked items below are detailed review p
 - [ ] Check native fullscreen entry/exit, pause layout and fonts on the intended display.
 - [x] Another-computer build and play-test completed on 8 November 2026 using `.\mvnw.cmd clean package` and `.\mvnw.cmd javafx:run`; final-speed checks also confirmed. See [README: Second-computer validation](../README.md#second-computer-validation). Keep available logs and screenshots with the test evidence.
 - [ ] Prepare for Q&A: movement, effect replacement, levels, combo timing, tests, class relationships, ownership and multiplicities.
-- [ ] Check the AI log against the conversations, add missing assistance, complete student details and sign it.
-- [ ] Complete the official COMP2042 AI Use Declaration Form. The usage log is supplementary.
-- [ ] Check assessor access to GitHub; add `kooitt` if the repository is private.
+- [x] The project author supplied `AI_Usage_Log_LinYiwei.docx` on 9 November 2026, with five grouped records, student details, a Yes selection and a typed name/date. The packaged copy matches that supplied file.
+- [ ] Confirm that the supplied log is the form required by the module; follow any separate COMP2042 AI Use Declaration Form instructions on Moodle.
+- [x] GitHub repository is public and its `main` commit matches local `main` (`ec2128d`, checked on 9 November 2026). The README contains the repository link.
 
 ## Video and final packaging
 
-- [ ] Record `Demo.mp4` (or another permitted format), no longer than three minutes, using your own voice. Show gameplay, refactoring, additions and two proud achievements.
-- [ ] Replace `StudentName` with your full name; confirm the IDE and Java version.
-- [ ] Create `StudentName_IDE_JavaVersion.zip` with source, resources, Maven wrapper and build configuration. Extract it and check that it builds.
-- [ ] Create `COMP2042StudentName` containing:
+- [x] `Demo.mp4` recorded and reviewed: 2 min 39.95 s, MP4/H.264, 149,804,615 bytes. It shows gameplay, refactoring, additions and two proud achievements with the author's narration. The compressed file decoded without errors and retained the original audio.
+- [x] Submission name confirmed as Lin Yiwei; filenames use `LinYiwei`, IDE `VSCode` and Java `27` (development JDK 27.0.1.0.3).
+- [x] `LinYiwei_VSCode_27.zip` contains source, resources, tests, Maven wrapper, configuration and documentation. A clean package build from the extracted archive passed 255 JUnit invocations on JDK 27 on 9 November 2026.
+- [x] Created `COMP2042LinYiwei` containing:
 
   ```text
   README.md
   Design.pdf
   Javadoc/
   Demo.mp4
-  StudentName_IDE_JavaVersion.zip
+  LinYiwei_VSCode_27.zip
+  AI_Usage_Log_LinYiwei.docx
   ```
 
-- [ ] Include README, Design.pdf and Javadoc from the same final code version. Update them if the code changes.
-- [ ] ZIP the outer folder, check its contents and keep the upload within Moodle's 250 MB limit. Submit the ZIP.
+- [x] README, Design.pdf and Javadoc match the packaged production source. Source inventory, diagram and local Javadoc links were checked.
+- [x] Prepared and inspected `COMP2042LinYiwei.zip` with the required folder structure and a size below 250 MB.
+- [x] The completed AI usage log is present in the outer folder and project archive; all previously required technical materials are retained.
+- [ ] Check the module's declaration instructions and submit the final coursework ZIP to Moodle. No Moodle submission has been made by the assistant.
 
 The coursework PDF gives the deadline as 7 December 2026 at 23:59. Check the module submission page for later announcements.
