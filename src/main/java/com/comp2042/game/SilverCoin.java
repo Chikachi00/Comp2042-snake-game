@@ -40,7 +40,7 @@ public class SilverCoin extends Coin {
     @Override
     double applyEffect(Game game, Snake snake, Obstacle obstacle, Random random) {
         int previousCount = obstacle.getObstacles().size();
-        int amount = random.nextInt(game.getWidth() * game.getHeight() / 20) + 3;
+        int amount = random.nextInt(Math.max(1, game.getWidth() * game.getHeight() / 20)) + 3;
         obstacle.newObstacles(snake, this, amount);
         game.decMaxScore(obstacle.getObstacles().size() - previousCount);
         return game.getSpeed();

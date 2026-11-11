@@ -12,9 +12,12 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * Coordinates keyboard and menu input with the session, JavaFX timer and view.
@@ -30,6 +33,7 @@ public class GameController {
     private Direction direction = Direction.LEFT;
     private boolean keyPressed = false;
     private final GameFlow flow = new GameFlow();
+    private final Set<KeyCode> heldShortcuts = EnumSet.noneOf(KeyCode.class);
 
     /**
      * Connects a session and view to a stage and configures the repeating movement timer.
@@ -58,7 +62,13 @@ public class GameController {
         this.stage = stage;
         this.returnToMenu = java.util.Objects.requireNonNull(returnToMenu, "returnToMenu");
         this.highScores = java.util.Objects.requireNonNull(highScores, "highScores");
+        this.stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+        this.stage.setFullScreenExitHint("P / Esc: Pause    -: Exit fullscreen");
+        this.stage.focusedProperty().addListener((observable, wasFocused, isFocused) -> {
+            if (!isFocused) heldShortcuts.clear();
+        });
         this.stage.setOnHidden(event -> {
+            heldShortcuts.clear();
             animation.stop();
             updateHighScore();
             highScores.flush();
@@ -153,12 +163,21 @@ public class GameController {
     }
 
     /**
-     * Handles movement, pause, restart and fullscreen keyboard input.
+     * Handles movement and shortcuts; pause and restart trigger once until their key is released.
      *
-     * @param event key-press event from the game scene
+     * @param event key-press or key-release event from the game scene
      */
     public void handle(KeyEvent event) {
         KeyCode code = event.getCode();
+        if (event.getEventType() == KeyEvent.KEY_RELEASED) {
+            heldShortcuts.remove(code);
+            return;
+        }
+        if (event.getEventType() != KeyEvent.KEY_PRESSED) return;
+        if (code == KeyCode.TAB || code == KeyCode.P || code == KeyCode.ESCAPE) {
+            event.consume();
+            if (!heldShortcuts.add(code)) return;
+        }
         if (code == KeyCode.TAB) {
             restart();
             event.consume();
@@ -167,6 +186,11 @@ public class GameController {
         if (code == KeyCode.P || code == KeyCode.ESCAPE) {
             if (flow.isPaused()) resume();
             else if (!session.isOver()) pause();
+            event.consume();
+            return;
+        }
+        if (code == KeyCode.PLUS || code == KeyCode.MINUS) {
+            stage.setFullScreen(code == KeyCode.PLUS);
             event.consume();
             return;
         }
@@ -183,11 +207,6 @@ public class GameController {
                 keyPressed = true;
                 gameView.turnDir(session.getSnake(), previous, direction);
             }
-        }
-        if (code == KeyCode.PLUS) {
-            stage.setFullScreen(true);
-        } else if (code == KeyCode.MINUS) {
-            stage.setFullScreen(false);
         }
     }
 

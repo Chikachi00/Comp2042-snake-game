@@ -112,6 +112,7 @@ public class MainMenuController {
 
         // Capture game shortcuts before focused controls consume keys for navigation.
         gameScene.addEventFilter(KeyEvent.KEY_PRESSED, controller::handle);
+        gameScene.addEventFilter(KeyEvent.KEY_RELEASED, controller::handle);
 
         gameView.makeScene(gameScene, snek, coin);
         gameView.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);

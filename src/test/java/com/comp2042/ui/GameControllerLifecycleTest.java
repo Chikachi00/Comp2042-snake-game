@@ -15,10 +15,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -37,6 +39,72 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Exercises keyboard/menu actions together with the real session and Timeline. */
 class GameControllerLifecycleTest extends JavaFxTestSupport {
     private static final long SECOND = 1_000_000_000L;
+
+    @ParameterizedTest
+    @EnumSource(value = KeyCode.class, names = {"P", "ESCAPE"})
+    void heldPauseKeyTriggersOnceUntilReleased(KeyCode pauseKey) throws Exception {
+        runOnFxThread(() -> {
+            try (Round round = new Round(Level.ONE)) {
+                round.key(KeyCode.LEFT);
+                round.press(pauseKey);
+                for (int i = 0; i < 5; i++) round.press(pauseKey);
+                round.assertPauseMenu();
+                assertEquals(Animation.Status.PAUSED, round.timer.getStatus());
+                round.release(pauseKey);
+                round.press(pauseKey);
+                assertEquals(Animation.Status.RUNNING, round.timer.getStatus());
+                assertFalse(round.node("gameMenu").isVisible());
+                round.release(pauseKey);
+            }
+        });
+    }
+
+    @Test
+    void heldRestartKeyDoesNotCreateMultipleRoundsAndCanBePressedAgain() throws Exception {
+        runOnFxThread(() -> {
+            try (Round round = new Round(Level.TWO)) {
+                round.key(KeyCode.LEFT); round.eat(false);
+                round.press(KeyCode.TAB);
+                Snake restarted = round.session.getSnake();
+                for (int i = 0; i < 5; i++) round.press(KeyCode.TAB);
+                assertSame(restarted, round.session.getSnake());
+                round.assertReadyWithNoScore();
+                round.release(KeyCode.TAB);
+                round.key(KeyCode.TAB);
+                assertNotSame(restarted, round.session.getSnake());
+                assertEquals(Level.TWO, round.session.getLevel());
+            }
+        });
+    }
+
+    @Test
+    void fullscreenEscapePausesWithoutLeavingFullscreenAndMinusStillExits() throws Exception {
+        runOnFxThread(() -> {
+            try (Round round = new Round(Level.ONE)) {
+                round.stage.setScene(round.scene);
+                round.stage.show();
+                round.key(KeyCode.LEFT);
+                round.key(KeyCode.PLUS);
+                assertTrue(round.stage.isFullScreen());
+                assertEquals(KeyCombination.NO_MATCH, round.stage.getFullScreenExitKeyCombination());
+                round.key(KeyCode.ESCAPE);
+                assertTrue(round.stage.isFullScreen());
+                round.assertPauseMenu();
+                assertEquals(Animation.Status.PAUSED, round.timer.getStatus());
+                round.key(KeyCode.MINUS);
+                assertFalse(round.stage.isFullScreen());
+                assertEquals(Animation.Status.PAUSED, round.timer.getStatus());
+                round.key(KeyCode.PLUS);
+                assertTrue(round.stage.isFullScreen());
+                assertEquals(Animation.Status.PAUSED, round.timer.getStatus());
+                round.key(KeyCode.ESCAPE);
+                assertEquals(Animation.Status.RUNNING, round.timer.getStatus());
+                round.key(KeyCode.MINUS);
+                assertFalse(round.stage.isFullScreen());
+                assertEquals(0, round.mainMenuVisits.get());
+            }
+        });
+    }
 
     @ParameterizedTest
     @EnumSource(value = KeyCode.class, names = {"P", "ESCAPE"})
@@ -271,6 +339,7 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
             view.makeScene(scene, session.getSnake(), session.getCoin());
             controller = new GameController(session, view, stage, mainMenuVisits::incrementAndGet);
             scene.addEventFilter(KeyEvent.KEY_PRESSED, controller::handle);
+            scene.addEventFilter(KeyEvent.KEY_RELEASED, controller::handle);
             view.setMenuActions(controller::resume, controller::restart, controller::returnToMainMenu);
             view.attachTo(root);
             view.updateProgress(session);
@@ -278,8 +347,18 @@ class GameControllerLifecycleTest extends JavaFxTestSupport {
         }
 
         void key(KeyCode code) {
+            press(code);
+            release(code);
+        }
+
+        void press(KeyCode code) {
             Event.fireEvent(scene.getFocusOwner() == null ? scene : scene.getFocusOwner(),
                     new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+                    false, false, false, false));
+        }
+
+        void release(KeyCode code) {
+            Event.fireEvent(scene, new KeyEvent(KeyEvent.KEY_RELEASED, "", "", code,
                     false, false, false, false));
         }
 

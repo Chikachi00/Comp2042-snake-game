@@ -64,8 +64,11 @@ public class Snake {
             dead = true;
         }
 
-        if (body.size() > 4 && hitSelf() && !body.get(0).equals(head)) {
-            dead = true;
+        // The oldest tail cell leaves on a non-growing move; every other cell is occupied.
+        for (int index = 1; !dead && index < body.size(); index++) {
+            if (body.get(index).equals(head)) {
+                dead = true;
+            }
         }
     }
 

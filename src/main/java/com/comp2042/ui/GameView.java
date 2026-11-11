@@ -3,6 +3,7 @@ package com.comp2042.ui;
 import com.comp2042.game.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
@@ -17,8 +18,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Screen;
+import javafx.stage.Window;
 import java.awt.Point;
 import java.util.List;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,6 +54,7 @@ public class GameView {
     private final ImageView imageBody = new ImageView(new Image("resources/views/res/snakebody.png"));
     private final ImageView imageTurn = new ImageView(new Image("resources/views/res/snaketurnleft.png"));
     private final ImageView imageTail = new ImageView(new Image("resources/views/res/snaketail.png"));
+    private final Map<ImageView, Image[]> spriteCache = new IdentityHashMap<>();
     private final Map<CoinType, Image> coinImages = Map.of(
             CoinType.NORMAL, new Image("resources/views/res/redcoin.png"),
             CoinType.GOLD, new Image("resources/views/res/goldcoin.png"),
@@ -236,17 +240,47 @@ public class GameView {
     public void resizeForFullscreen(boolean fullScreen, Obstacle obstacle, Snake snek, Coin coin) {
         fullsize = fullScreen;
         if (fullScreen) {
-            double side = Math.min(Screen.getPrimary().getBounds().getWidth(), Screen.getPrimary().getBounds().getHeight() - 80);
-            applyScale(Math.max(1, side / initY));
-            resizeToAvailableSpace();
+            Rectangle2D screen = screenBoundsForWindow();
+            applyScale(Math.min(screen.getWidth() / initX, Math.max(1, screen.getHeight() - 80) / initY));
         } else applyScale(1);
         drawGrid(coin, snek, obstacle);
+    }
+
+    /** @return bounds of the screen containing the largest part of the current game window */
+    private Rectangle2D screenBoundsForWindow() {
+        List<Rectangle2D> screens = Screen.getScreens().stream().map(Screen::getBounds).toList();
+        Window window = boardHost.getScene() == null ? null : boardHost.getScene().getWindow();
+        if (window == null || !Double.isFinite(window.getX()) || !Double.isFinite(window.getY())) {
+            return screens.getFirst();
+        }
+        return selectScreenBounds(new Rectangle2D(window.getX(), window.getY(),
+                Math.max(0, window.getWidth()), Math.max(0, window.getHeight())), screens);
+    }
+
+    /**
+     * Selects by overlap rather than assuming the primary monitor, including negative coordinates.
+     * @param window current game window bounds
+     * @param screens available screen bounds
+     * @return the screen with the greatest intersection, or the first when none intersects
+     * @throws IllegalArgumentException if no screens are supplied
+     */
+    static Rectangle2D selectScreenBounds(Rectangle2D window, List<Rectangle2D> screens) {
+        if (screens.isEmpty()) throw new IllegalArgumentException("No screens available");
+        Rectangle2D selected = screens.getFirst();
+        double greatestArea = -1;
+        for (Rectangle2D screen : screens) {
+            double width = Math.max(0, Math.min(window.getMaxX(), screen.getMaxX()) - Math.max(window.getMinX(), screen.getMinX()));
+            double height = Math.max(0, Math.min(window.getMaxY(), screen.getMaxY()) - Math.max(window.getMinY(), screen.getMinY()));
+            double area = width * height;
+            if (area > greatestArea) { selected = screen; greatestArea = area; }
+        }
+        return selected;
     }
 
     /** Fits fullscreen drawing inside the allocated board container, excluding HUD and footer. */
     private void resizeToAvailableSpace() {
         if (!fullsize || boardHost == null || boardHost.getScene() == null
-                || boardHost.getScene().getHeight() <= 480) return;
+                || boardHost.getScene().getWindow() == null) return;
         double scale = Math.min(boardHost.getWidth() / initX, boardHost.getHeight() / initY);
         if (scale > 0 && Math.abs(scale - fullScale) > 0.0001) {
             applyScale(scale);
@@ -351,10 +385,7 @@ public class GameView {
      * @param snek current snake
      */
     private void drawHead(Snake snek) {
-        imageHead.setRotate(rotation(snek.getDirection()));
-        SnapshotParameters params = new SnapshotParameters();
-        params.setFill(Color.TRANSPARENT);
-        Image rotatedImage = imageHead.snapshot(params, null);
+        Image rotatedImage = rotatedSprite(imageHead, rotation(snek.getDirection()));
         gc.drawImage(rotatedImage, (snek.getHead().x * game.getMultiplier()) * fullScale, (snek.getHead().y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale, game.getMultiplier() * fullScale);
     }
 
@@ -369,10 +400,7 @@ public class GameView {
     private void drawBody(Snake snek, List<Point> body, Point point, int index) {
         Image rotatedImage;
         if (body.size() <= 1) {
-            imageTail.setRotate(rotation(snek.getDirection()));
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            rotatedImage = imageTail.snapshot(params, null);
+            rotatedImage = rotatedSprite(imageTail, rotation(snek.getDirection()));
         } else if (index == 0) {
             int rotateTail;
             if (body.get(1).getX() == body.get(0).getX() && body.get(1).getY() == body.get(0).getY() - 1) {
@@ -384,20 +412,11 @@ public class GameView {
             } else {
                 rotateTail = 90;
             }
-            imageTail.setRotate(rotateTail);
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            rotatedImage = imageTail.snapshot(params, null);
+            rotatedImage = rotatedSprite(imageTail, rotateTail);
         } else if (index > 0 && (turnArray[(int) body.get(index).getX()][(int) body.get(index).getY()] != 0)) {
-            imageTurn.setRotate(90 * turnArray[(int) body.get(index).getX()][(int) body.get(index).getY()]);
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            rotatedImage = imageTurn.snapshot(params, null);
+            rotatedImage = rotatedSprite(imageTurn, 90 * turnArray[(int) body.get(index).getX()][(int) body.get(index).getY()]);
         } else {
-            imageBody.setRotate(rotation(snek.getBodyDirection(index)));
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            rotatedImage = imageBody.snapshot(params, null);
+            rotatedImage = rotatedSprite(imageBody, rotation(snek.getBodyDirection(index)));
         }
 
         if (turnArray[(int) body.get(0).getX()][(int) body.get(0).getY()] != 0) {
@@ -405,6 +424,24 @@ public class GameView {
         }
 
         gc.drawImage(rotatedImage, (point.x * game.getMultiplier()) * fullScale, (point.y * game.getMultiplier()) * fullScale, game.getMultiplier() * fullScale, game.getMultiplier() * fullScale);
+    }
+
+    /**
+     * Reuses the original rotated pixels, creating at most four images for each snake sprite.
+     * @param sprite original sprite view
+     * @param degrees rotation in multiples of ninety degrees
+     * @return cached image for the requested orientation
+     */
+    private Image rotatedSprite(ImageView sprite, int degrees) {
+        int index = Math.floorMod(degrees / 90, 4);
+        Image[] rotations = spriteCache.computeIfAbsent(sprite, ignored -> new Image[4]);
+        if (rotations[index] == null) {
+            sprite.setRotate(index * 90);
+            SnapshotParameters parameters = new SnapshotParameters();
+            parameters.setFill(Color.TRANSPARENT);
+            rotations[index] = sprite.snapshot(parameters, null);
+        }
+        return rotations[index];
     }
 
     /**

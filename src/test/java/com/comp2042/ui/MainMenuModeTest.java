@@ -19,6 +19,31 @@ import org.junit.jupiter.params.provider.EnumSource;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MainMenuModeTest extends JavaFxTestSupport {
+    @ParameterizedTest
+    @EnumSource(value = KeyCode.class, names = {"P", "ESCAPE"})
+    void realGameSceneCapturesShortcutReleasesEvenWhenAButtonHasFocus(KeyCode code) throws Exception {
+        runOnFxThread(() -> {
+            try (Menu menu = new Menu()) {
+                menu.start();
+                Scene scene = menu.gameScene();
+                Event.fireEvent(scene, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+                        false, false, false, false));
+                Button resume = menu.gameButton("resumeButton");
+                resume.requestFocus();
+                Event.fireEvent(resume, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+                        false, false, false, false));
+                assertTrue(scene.lookup("#gameMenu").isVisible());
+                Event.fireEvent(resume, new KeyEvent(KeyEvent.KEY_RELEASED, "", "", code,
+                        false, false, false, false));
+                Event.fireEvent(resume, new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code,
+                        false, false, false, false));
+                assertFalse(scene.lookup("#gameMenu").isVisible());
+                Event.fireEvent(scene, new KeyEvent(KeyEvent.KEY_RELEASED, "", "", code,
+                        false, false, false, false));
+            }
+        });
+    }
+
     @Test
     void hidesLevelChoicesInEndlessAndRetainsChallengeSelectionWhenSwitchingModes() throws Exception {
         runOnFxThread(() -> {
@@ -168,6 +193,8 @@ class MainMenuModeTest extends JavaFxTestSupport {
         void start() { ((Button) scene().lookup("#btn_start")).fire(); }
         void pause() {
             Event.fireEvent(gameScene(), new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.P,
+                    false, false, false, false));
+            Event.fireEvent(gameScene(), new KeyEvent(KeyEvent.KEY_RELEASED, "", "", KeyCode.P,
                     false, false, false, false));
         }
         void back() {

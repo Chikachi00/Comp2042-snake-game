@@ -25,6 +25,7 @@ public class Game {
      * @param y board height in cells
      * @param powerUp whether special coins may be generated
      * @param difficulty E for easy, N for normal or H for hard
+     * @throws IllegalArgumentException if difficulty is not E, N or H
      */
     public Game(int x, int y, boolean powerUp, char difficulty) {
         if (difficulty == 'E') {
@@ -36,6 +37,8 @@ public class Game {
         } else if (difficulty == 'H') {
             speed = GameSpeed.FAST.movesPerSecond();
             noBorder = false;
+        } else {
+            throw new IllegalArgumentException("Unknown difficulty: " + difficulty);
         }
         this.powerUp = powerUp;
         width = x;

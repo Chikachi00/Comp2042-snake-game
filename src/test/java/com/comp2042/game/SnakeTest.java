@@ -3,6 +3,7 @@ package com.comp2042.game;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.awt.Point;
 import java.util.List;
@@ -13,6 +14,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SnakeTest {
     private static final Point NO_COIN = new Point(-1, -1);
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2})
+    void shortSnakeStillDetectsAnOccupiedBodyCellWhenCalledDirectly(int growth) {
+        Snake snake = new Snake(20, 20, false, new Obstacle(20, 20));
+        for (int i = 0; i < growth; i++) {
+            snake.move(Direction.LEFT);
+            snake.ateCoin(snake.getHead());
+        }
+        // Even a caller that bypasses the controller cannot silently overlap a non-tail cell.
+        snake.move(Direction.RIGHT);
+        assertTrue(snake.getDead());
+    }
+
+    @Test
+    void enteringTheTailCellThatLeavesThisMoveIsAllowed() {
+        Snake snake = new Snake(20, 20, false, new Obstacle(20, 20));
+        snake.move(Direction.LEFT); snake.ateCoin(snake.getHead());
+        snake.move(Direction.UP); snake.ateCoin(snake.getHead());
+        snake.move(Direction.RIGHT); snake.ateCoin(NO_COIN);
+        snake.move(Direction.DOWN); snake.ateCoin(NO_COIN);
+        assertFalse(snake.getDead());
+        assertFalse(snake.hitSelf());
+    }
+
 
     @Test
     void startsAtTheCenterFacingLeft() {

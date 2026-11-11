@@ -6,6 +6,7 @@ import com.comp2042.game.Game;
 import com.comp2042.game.GameSession;
 import com.comp2042.game.Obstacle;
 import com.comp2042.game.Snake;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.PixelReader;
@@ -22,12 +23,28 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.awt.Point;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Checks the rendered sprites, including straight, corner and tail segments. */
 class GameViewScalingTest extends JavaFxTestSupport {
+    @ParameterizedTest
+    @CsvSource({
+            "100, 100, 400, 400, 0", "2050, 100, 400, 400, 1",
+            "-1500, 100, 400, 400, 2", "1800, 100, 800, 400, 1",
+            "100, 1200, 400, 300, 3", "-4000, 3000, 400, 400, 0"
+    })
+    void fullscreenUsesTheScreenWithMostOfTheWindow(double x, double y, double width,
+                                                   double height, int expectedScreen) {
+        List<Rectangle2D> screens = List.of(new Rectangle2D(0, 0, 1920, 1080),
+                new Rectangle2D(1920, 0, 2560, 1440), new Rectangle2D(-1600, 0, 1600, 900),
+                new Rectangle2D(0, 1080, 1920, 1080));
+        assertEquals(screens.get(expectedScreen),
+                GameView.selectScreenBounds(new Rectangle2D(x, y, width, height), screens));
+    }
+
     @ParameterizedTest(name = "scale={0}, corner={1}")
     @CsvSource({"1.5, false", "2.0, false", "1.5, true", "2.0, true"})
     void snakeSpritesScaleWithTheBoard(double scale, boolean corner) throws Exception {

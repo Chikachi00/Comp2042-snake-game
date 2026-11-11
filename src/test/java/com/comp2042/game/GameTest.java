@@ -1,12 +1,21 @@
 package com.comp2042.game;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class GameTest {
+    @ParameterizedTest
+    @ValueSource(chars = {'?', 'X', 'n', '\0'})
+    void rejectsUnknownDifficultyInsteadOfCreatingAStationaryGame(char difficulty) {
+        assertThrows(IllegalArgumentException.class, () -> new Game(20, 20, true, difficulty));
+    }
+
     @Test
     void accountsForEveryAddedObstacleInTheWinThreshold() {
         Game game = new Game(3, 3, true, 'N');

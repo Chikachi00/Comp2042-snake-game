@@ -1,6 +1,8 @@
 package com.comp2042.game;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.awt.Point;
 import java.util.Random;
@@ -11,6 +13,29 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CoinEffectServiceTest {
     private static final Point NO_COIN = new Point(-1, -1);
+
+    @ParameterizedTest
+    @CsvSource({"3, 2", "3, 3", "4, 4", "4, 5"})
+    void silverOnSmallBoardsAddsOnlyAvailableCellsAndKeepsTheWinThreshold(int width, int height) {
+        Game game = new Game(width, height, true, 'N');
+        Obstacle obstacle = new Obstacle(width, height, new Random(2042));
+        Snake snake = new Snake(width, height, false, obstacle);
+        Coin silver = new SilverCoin(new Point(0, 0));
+        CoinEffectService effects = new CoinEffectService(new Random(42));
+
+        assertEquals(game.getSpeed(), effects.apply(silver, game, snake, obstacle));
+        assertEquals(3, obstacle.getObstacles().size());
+        assertEquals(5, game.getScorePoints());
+        assertFalse(obstacle.getObstacles().contains(snake.getHead()));
+        assertTrue(snake.getBody().stream().noneMatch(obstacle.getObstacles()::contains));
+        assertFalse(obstacle.getObstacles().contains(silver.getPos()));
+        int target = width * height - 2 - obstacle.getObstacles().size();
+        for (int i = 0; i < target - 1; i++) game.incScore();
+        assertFalse(game.gameWon());
+        game.incScore();
+        assertTrue(game.gameWon());
+    }
+
 
     @Test
     void normalAndGoldCoinsAwardPointsAtBaseSpeed() {
